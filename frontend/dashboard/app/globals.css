@@ -1,12 +1,22 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core palette – warm, soft, editorial */
+  --background: #f4eee9;        /* warm ivory */
+  --background-elevated: #efe6df;
+  --foreground: #2b2623;        /* soft charcoal brown */
+
+  /* Accents */
+  --border-soft: rgba(0, 0, 0, 0.08);
+  --shadow-soft: rgba(0, 0, 0, 0.12);
 }
 
+/* Disable aggressive dark-mode inversion for now */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1b1715;
+    --background-elevated: #221d1a;
+    --foreground: #e6ded7;
+    --border-soft: rgba(255, 255, 255, 0.08);
+    --shadow-soft: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -17,24 +27,90 @@ body {
 }
 
 body {
+  position: relative;
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+
+  /* Softer digital feel */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ---------- FILM GRAIN OVERLAY ---------- */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+
+  /* fine film grain */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.35;
+}
+
+/* ---------- SOFT VIGNETTE ---------- */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 60%,
+    rgba(0, 0, 0, 0.12) 100%
+  );
+}
+
+/* ---------- GLOBAL RESET ---------- */
 * {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
 }
 
+/* ---------- LINKS ---------- */
 a {
   color: inherit;
   text-decoration: none;
 }
 
+/* ---------- CARDS / PANELS (future-proof) ---------- */
+.card {
+  background: var(--background-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  box-shadow: 0 10px 25px var(--shadow-soft);
+}
+
+/* ---------- BUTTON BASE ---------- */
+button {
+  background: var(--background-elevated);
+  color: var(--foreground);
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  box-shadow: 0 6px 18px var(--shadow-soft);
+}
+
+/* ---------- INPUT BASE ---------- */
+input {
+  background: var(--background-elevated);
+  color: var(--foreground);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+/* Keep system color-scheme sane */
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
