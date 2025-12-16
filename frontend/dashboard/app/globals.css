@@ -1,22 +1,45 @@
 :root {
-  /* Core palette – warm, soft, editorial */
-  --background: #f4eee9;        /* warm ivory */
-  --background-elevated: #efe6df;
-  --foreground: #2b2623;        /* soft charcoal brown */
+  /* Core palette – champagne / antique-gold warmth (soft + premium) */
+  --background: #f5efe6;           /* champagne ivory */
+  --background-elevated: #f1e7da;  /* slightly warmer lift */
+  --foreground: #2a2420;           /* soft espresso */
 
-  /* Accents */
-  --border-soft: rgba(0, 0, 0, 0.08);
-  --shadow-soft: rgba(0, 0, 0, 0.12);
+  /* Warm neutrals */
+  --muted: rgba(42, 36, 32, 0.62);
+  --muted-2: rgba(42, 36, 32, 0.42);
+
+  /* “Gold” is a temperature, not a color block */
+  --gold-tint: rgba(176, 140, 74, 0.18);     /* antique gold hint */
+  --gold-edge: rgba(176, 140, 74, 0.28);     /* for subtle edges */
+  --gold-glow: rgba(176, 140, 74, 0.12);     /* soft ambient bloom */
+
+  /* Borders + shadows (warm, not gray) */
+  --border-soft: rgba(42, 36, 32, 0.10);
+  --border-warm: rgba(176, 140, 74, 0.16);
+
+  --shadow-soft: rgba(30, 24, 20, 0.14);
+  --shadow-deep: rgba(30, 24, 20, 0.22);
 }
 
-/* Disable aggressive dark-mode inversion for now */
+/* Keep dark mode calm and warm (no harsh inversion) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #1b1715;
-    --background-elevated: #221d1a;
-    --foreground: #e6ded7;
-    --border-soft: rgba(255, 255, 255, 0.08);
-    --shadow-soft: rgba(0, 0, 0, 0.5);
+    --background: #151210;           /* warm near-black */
+    --background-elevated: #1b1714;  /* lifted card */
+    --foreground: #e9e1d8;
+
+    --muted: rgba(233, 225, 216, 0.62);
+    --muted-2: rgba(233, 225, 216, 0.42);
+
+    --gold-tint: rgba(202, 168, 98, 0.18);
+    --gold-edge: rgba(202, 168, 98, 0.28);
+    --gold-glow: rgba(202, 168, 98, 0.10);
+
+    --border-soft: rgba(233, 225, 216, 0.10);
+    --border-warm: rgba(202, 168, 98, 0.18);
+
+    --shadow-soft: rgba(0, 0, 0, 0.50);
+    --shadow-deep: rgba(0, 0, 0, 0.72);
   }
 }
 
@@ -32,12 +55,12 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 
-  /* Softer digital feel */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ---------- FILM GRAIN OVERLAY ---------- */
+/* ---------- SOFT “LIGHT SOURCE” WARMTH ---------- */
+/* This is the premium gold feel: a faint warm light wash + gentle vignette. */
 body::before {
   content: "";
   position: fixed;
@@ -45,9 +68,22 @@ body::before {
   pointer-events: none;
   z-index: 9999;
 
-  /* fine film grain */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  opacity: 0.35;
+  /* subtle warm wash (top-left) + fine film grain */
+  background:
+    radial-gradient(
+      1200px 900px at 18% 10%,
+      rgba(176, 140, 74, 0.10),
+      rgba(176, 140, 74, 0.00) 60%
+    ),
+    radial-gradient(
+      900px 700px at 80% 35%,
+      rgba(176, 140, 74, 0.06),
+      rgba(176, 140, 74, 0.00) 55%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+
+  opacity: 0.42; /* grain + warmth strength */
+  mix-blend-mode: multiply;
 }
 
 /* ---------- SOFT VIGNETTE ---------- */
@@ -58,11 +94,12 @@ body::after {
   pointer-events: none;
   z-index: 9998;
 
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0) 60%,
-    rgba(0, 0, 0, 0.12) 100%
-  );
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0) 58%,
+      rgba(0, 0, 0, 0.14) 100%
+    );
 }
 
 /* ---------- GLOBAL RESET ---------- */
@@ -78,12 +115,34 @@ a {
   text-decoration: none;
 }
 
-/* ---------- CARDS / PANELS (future-proof) ---------- */
+/* ---------- CARDS / PANELS ---------- */
 .card {
   background: var(--background-elevated);
   border: 1px solid var(--border-soft);
   border-radius: 14px;
-  box-shadow: 0 10px 25px var(--shadow-soft);
+
+  /* warm, premium depth */
+  box-shadow:
+    0 14px 30px var(--shadow-soft),
+    0 2px 0 rgba(255, 255, 255, 0.25) inset;
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtle antique-gold edge sheen (barely there) */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+
+  background: radial-gradient(
+    900px 300px at 20% 0%,
+    var(--gold-edge),
+    rgba(176, 140, 74, 0.00) 60%
+  );
+  opacity: 0.25;
 }
 
 /* ---------- BUTTON BASE ---------- */
@@ -94,11 +153,19 @@ button {
   border-radius: 999px;
   padding: 8px 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 button:hover {
-  box-shadow: 0 6px 18px var(--shadow-soft);
+  border-color: var(--border-warm);
+  box-shadow:
+    0 10px 24px var(--shadow-soft),
+    0 0 0 6px var(--gold-glow);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0px);
 }
 
 /* ---------- INPUT BASE ---------- */
@@ -108,6 +175,13 @@ input {
   border: 1px solid var(--border-soft);
   border-radius: 10px;
   padding: 8px 10px;
+  outline: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+input:focus {
+  border-color: var(--border-warm);
+  box-shadow: 0 0 0 6px var(--gold-glow);
 }
 
 /* Keep system color-scheme sane */
