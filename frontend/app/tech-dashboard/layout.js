@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "VTech • Tech Dashboard",
+  title: "VTech",
   description: "Remote tech assistance dashboard (MVP)",
 };
 
@@ -24,10 +24,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* App shell wrapper for global filters & future layout control */}
+        {/* Global app shell (used by dashboards + auth pages) */}
         <div className="app-shell">{children}</div>
       </body>
     </html>
   );
 }
-
