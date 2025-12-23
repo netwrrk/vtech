@@ -1,68 +1,52 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import styles from "./page.module.css";
 
 export default function Page() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("tech"); // "tech" | "user"
+  const [role, setRole] = useState("tech");
   const [err, setErr] = useState("");
-
-  // Load page-local CSS (since you already created sign.css)
-  useEffect(() => {
-    const id = "vtech-signin-css";
-    if (document.getElementById(id)) return;
-
-    const link = document.createElement("link");
-    link.id = id;
-    link.rel = "stylesheet";
-    link.href = "/sign.css"; // served from /public
-    document.head.appendChild(link);
-  }, []);
 
   function fakeSignIn(e) {
     e.preventDefault();
     setErr("");
 
-    // basic validation (keep it simple)
     if (!email.trim() || !password.trim()) {
       setErr("Enter email + password.");
       return;
     }
 
-    // MVP session (replace later with real auth)
-    const session = {
-      role, // tech or user
-      email: email.trim(),
-      createdAt: Date.now(),
-    };
+    const session = { role, email: email.trim(), createdAt: Date.now() };
+    localStorage.setItem("vtech_session", JSON.stringify(session));
 
-    try {
-      localStorage.setItem("vtech_session", JSON.stringify(session));
-    } catch {
-      setErr("Couldn’t save session (storage blocked).");
-      return;
-    }
-
-    // redirect based on role
     window.location.href = role === "tech" ? "/tech-dashboard" : "/user-dashboard";
   }
 
+  function clear() {
+    localStorage.removeItem("vtech_session");
+    setEmail("");
+    setPassword("");
+    setErr("");
+  }
+
   return (
-    <main className="signin-root">
-      <div className="signin-card">
-        <header className="signin-header">
-          <div className="signin-brand">
-            <span className="dot" aria-hidden="true" />
-            <h1>VTech</h1>
+    <main className={styles.root}>
+      <div className={styles.card}>
+        <header className={styles.header}>
+          <div className={styles.brand}>
+            <span className={styles.dot} aria-hidden="true" />
+            <h1 className={styles.title}>VTech</h1>
           </div>
-          <p>Sign in to continue</p>
+          <p className={styles.sub}>Sign in to continue</p>
         </header>
 
-        <form className="signin-form" onSubmit={fakeSignIn}>
-          <label className="field">
+        <form className={styles.form} onSubmit={fakeSignIn}>
+          <label className={styles.field}>
             <span>Email</span>
             <input
+              className={styles.input}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -71,9 +55,10 @@ export default function Page() {
             />
           </label>
 
-          <label className="field">
+          <label className={styles.field}>
             <span>Password</span>
             <input
+              className={styles.input}
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -82,39 +67,34 @@ export default function Page() {
             />
           </label>
 
-          <label className="field">
+          <label className={styles.field}>
             <span>Role</span>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <select
+              className={styles.select}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
               <option value="tech">Tech</option>
               <option value="user">User</option>
             </select>
           </label>
 
-          {err ? <div className="signin-error">{err}</div> : null}
+          {err ? <div className={styles.error}>{err}</div> : null}
 
-          <button className="primary-btn" type="submit">
+          <button className={styles.primary} type="submit">
             Sign In
           </button>
 
-          <div className="signin-meta">
-            <span className="muted">MVP auth (local session)</span>
-            <button
-              type="button"
-              className="link-btn"
-              onClick={() => {
-                localStorage.removeItem("vtech_session");
-                setEmail("");
-                setPassword("");
-                setErr("");
-              }}
-            >
+          <div className={styles.meta}>
+            <span className={styles.muted}>MVP auth (local session)</span>
+            <button type="button" className={styles.link} onClick={clear}>
               Clear
             </button>
           </div>
         </form>
 
-        <footer className="signin-footer">
-          <span className="muted">Tech Console • Soft UI MVP</span>
+        <footer className={styles.footer}>
+          <span className={styles.muted}>Tech Console • Soft UI MVP</span>
         </footer>
       </div>
     </main>
