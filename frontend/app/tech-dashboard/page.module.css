@@ -1,141 +1,324 @@
-.page {
-  --background: #fafafa;
-  --foreground: #fff;
+/* =========================================================
+   VTech — Editorial Control Dashboard (Refined)
+   Premium luminance hierarchy + state signaling
+========================================================= */
 
-  --text-primary: #000;
-  --text-secondary: #666;
+:root {
+  /* ---------- Active ---------- */
+  --green-core: #099247;
+  --green-soft: rgba(12, 156, 72, 0.45);
+  --green-glow: rgba(12, 156, 72, 0.16);
 
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
+  /* ---------- Error ---------- */
+  --error-core: #8b1e1e;
+  --error-soft: rgba(139, 30, 30, 0.45);
 
-  display: flex;
-  min-height: 100vh;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  /* ---------- Typography ---------- */
+  --white-core: rgba(255, 255, 255, 0.96);
+  --white-idle: rgba(235, 238, 240, 0.78);
+  --white-dim: rgba(235, 238, 240, 0.46);
+
+  /* ---------- Surfaces (CRITICAL FIX) ---------- */
+  --page-bg: #0b0e0f;
+  --panel-bg: rgba(18, 21, 23, 0.92);
+  --panel-soft: rgba(22, 26, 28, 0.92);
+  --panel-deep: rgba(10, 12, 13, 0.96);
+
+  --edge-light: rgba(255, 255, 255, 0.06);
 }
 
-.main {
+/* ---------- page ---------- */
+html,
+body {
+  background:
+    radial-gradient(
+      1200px 600px at 50% -220px,
+      rgba(255, 255, 255, 0.04),
+      transparent 60%
+    ),
+    var(--page-bg);
+  color: var(--white-idle);
+}
+
+/* ---------- shell ---------- */
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 36px 24px 60px;
+}
+
+.top {
   display: flex;
-  min-height: 100vh;
-  width: 100%;
-  max-width: 800px;
-  flex-direction: column;
-  align-items: flex-start;
   justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  gap: 20px;
+  margin-bottom: 26px;
 }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: 24px;
+/* ---------- typography ---------- */
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--white-dim);
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.intro h1 {
-  max-width: 320px;
-  font-size: 40px;
-  font-weight: 600;
-  line-height: 48px;
-  letter-spacing: -2.4px;
-  text-wrap: balance;
-  color: var(--text-primary);
+.headline {
+  margin: 8px 0 6px;
+  font-size: 36px;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 900;
+  color: var(--white-core);
 }
 
-.intro p {
-  max-width: 440px;
-  font-size: 18px;
-  line-height: 32px;
-  text-wrap: balance;
-  color: var(--text-secondary);
+.subhead {
+  font-size: 13px;
+  color: var(--white-idle);
 }
 
-.intro a {
-  font-weight: 500;
-  color: var(--text-primary);
+/* ---------- layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 18px;
 }
 
-.ctas {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 440px;
-  gap: 16px;
-  font-size: 14px;
-}
-
-.ctas a {
-  display: flex;
-  justify-content: center;
+/* ---------- pill ---------- */
+.pill {
+  display: inline-flex;
   align-items: center;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 128px;
-  border: 1px solid transparent;
-  transition: 0.2s;
-  cursor: pointer;
-  width: fit-content;
-  font-weight: 500;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--panel-soft);
+  border: 1px solid var(--edge-light);
 }
 
-a.primary {
-  background: var(--text-primary);
-  color: var(--background);
+.pillDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--white-dim);
+}
+
+.pillGood .pillDot {
+  background: var(--green-core);
+  box-shadow: 0 0 0 4px var(--green-glow);
+}
+
+.pillBad .pillDot {
+  background: var(--error-core);
+}
+
+.pillText {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- tiles ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.tile {
+  border-radius: 18px;
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.035),
+      rgba(255, 255, 255, 0.01)
+    ),
+    var(--panel-bg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 28px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.tileWide {
+  grid-column: 1 / -1;
+}
+
+.tileHead {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--edge-light);
+  display: flex;
+  justify-content: space-between;
+}
+
+.tileTitle {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.tileSub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--white-dim);
+}
+
+.tileActions {
+  display: flex;
   gap: 8px;
 }
 
-a.secondary {
-  border-color: var(--button-secondary-border);
+/* ---------- buttons ---------- */
+.mini {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: var(--white-idle);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-/* Enable hover only on non-touch devices */
-@media (hover: hover) and (pointer: fine) {
-  a.primary:hover {
-    background: var(--button-primary-hover);
-    border-color: transparent;
-  }
-
-  a.secondary:hover {
-    background: var(--button-secondary-hover);
-    border-color: transparent;
-  }
+.mini:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  transform: translateY(-1px);
 }
 
-@media (max-width: 600px) {
-  .main {
-    padding: 48px 24px;
-  }
-
-  .intro {
-    gap: 16px;
-  }
-
-  .intro h1 {
-    font-size: 32px;
-    line-height: 40px;
-    letter-spacing: -1.92px;
-  }
+.miniPrimary {
+  border-color: var(--green-soft);
+  color: var(--white-core);
 }
 
-@media (prefers-color-scheme: dark) {
-  .logo {
-    filter: invert();
+.miniPrimary:hover {
+  border-color: var(--green-core);
+  box-shadow: 0 0 0 4px var(--green-glow);
+}
+
+.arrow {
+  margin-left: 6px;
+  opacity: 0.6;
+}
+
+/* ---------- metrics ---------- */
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px 18px;
+}
+
+.metric {
+  border-radius: 14px;
+  padding: 12px;
+  background: var(--panel-soft);
+  position: relative;
+}
+
+.metric::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.metricGood::before {
+  background: var(--green-core);
+}
+
+.metricBad::before {
+  background: var(--error-core);
+}
+
+.metricLabel {
+  font-size: 11px;
+  color: var(--white-dim);
+}
+
+.metricValue {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+/* ---------- rows ---------- */
+.rows {
+  padding: 0 18px 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--panel-soft);
+}
+
+.rowKey {
+  font-size: 12px;
+  color: var(--white-dim);
+}
+
+.rowValue {
+  font-size: 12px;
+}
+
+/* ---------- terminal ---------- */
+.terminal {
+  margin: 14px 18px 18px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--panel-deep);
+  min-height: 260px;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+/* ---------- right rail ---------- */
+.rail {
+  position: sticky;
+  top: 20px;
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--panel-bg);
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.55);
+}
+
+.railBlock {
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--panel-soft);
+}
+
+.railTitle {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  font-weight: 900;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
   }
-
-  .page {
-    --background: #000;
-    --foreground: #000;
-
-    --text-primary: #ededed;
-    --text-secondary: #999;
-
-    --button-primary-hover: #ccc;
-    --button-secondary-hover: #1a1a1a;
-    --button-secondary-border: #1a1a1a;
+  .rail {
+    position: static;
+  }
+  .tiles {
+    grid-template-columns: 1fr;
+  }
+  .headline {
+    font-size: 30px;
   }
 }

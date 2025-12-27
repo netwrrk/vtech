@@ -1,192 +1,306 @@
-:root {
-  /* Core palette – champagne / antique-gold warmth (soft + premium) */
-  --background: #f5efe6;           /* champagne ivory */
-  --background-elevated: #f1e7da;  /* slightly warmer lift */
-  --foreground: #2a2420;           /* soft espresso */
+/* =========================================================
+   VTech — Black Void / Editorial Control UI
+   OZONTE-inspired (luxury, minimal, high-contrast)
+========================================================= */
 
-  /* Warm neutrals */
-  --muted: rgba(42, 36, 32, 0.62);
-  --muted-2: rgba(42, 36, 32, 0.42);
-
-  /* “Gold” is a temperature, not a color block */
-  --gold-tint: rgba(176, 140, 74, 0.18);     /* antique gold hint */
-  --gold-edge: rgba(176, 140, 74, 0.28);     /* for subtle edges */
-  --gold-glow: rgba(176, 140, 74, 0.12);     /* soft ambient bloom */
-
-  /* Borders + shadows (warm, not gray) */
-  --border-soft: rgba(42, 36, 32, 0.10);
-  --border-warm: rgba(176, 140, 74, 0.16);
-
-  --shadow-soft: rgba(30, 24, 20, 0.14);
-  --shadow-deep: rgba(30, 24, 20, 0.22);
-}
-
-/* Keep dark mode calm and warm (no harsh inversion) */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #151210;           /* warm near-black */
-    --background-elevated: #1b1714;  /* lifted card */
-    --foreground: #e9e1d8;
-
-    --muted: rgba(233, 225, 216, 0.62);
-    --muted-2: rgba(233, 225, 216, 0.42);
-
-    --gold-tint: rgba(202, 168, 98, 0.18);
-    --gold-edge: rgba(202, 168, 98, 0.28);
-    --gold-glow: rgba(202, 168, 98, 0.10);
-
-    --border-soft: rgba(233, 225, 216, 0.10);
-    --border-warm: rgba(202, 168, 98, 0.18);
-
-    --shadow-soft: rgba(0, 0, 0, 0.50);
-    --shadow-deep: rgba(0, 0, 0, 0.72);
-  }
-}
-
+/* ---------- base ---------- */
 html,
 body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  background: #060707;
+  color: rgba(235, 238, 240, 0.86);
 }
 
-body {
-  position: relative;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 32px 22px 56px;
 }
 
-/* ---------- SOFT “LIGHT SOURCE” WARMTH ---------- */
-/* This is the premium gold feel: a faint warm light wash + gentle vignette. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-
-  /* subtle warm wash (top-left) + fine film grain */
-  background:
-    radial-gradient(
-      1200px 900px at 18% 10%,
-      rgba(176, 140, 74, 0.10),
-      rgba(176, 140, 74, 0.00) 60%
-    ),
-    radial-gradient(
-      900px 700px at 80% 35%,
-      rgba(176, 140, 74, 0.06),
-      rgba(176, 140, 74, 0.00) 55%
-    ),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-
-  opacity: 0.42; /* grain + warmth strength */
-  mix-blend-mode: multiply;
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
 }
 
-/* ---------- SOFT VIGNETTE ---------- */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9998;
-
-  background:
-    radial-gradient(
-      ellipse at center,
-      rgba(0, 0, 0, 0) 58%,
-      rgba(0, 0, 0, 0.14) 100%
-    );
+/* ---------- typography ---------- */
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: rgba(235, 238, 240, 0.42);
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-/* ---------- GLOBAL RESET ---------- */
-* {
-  box-sizing: border-box;
-  padding: 0;
+.headline {
+  margin: 8px 0 6px;
+  font-size: 36px;
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+  font-weight: 900;
+}
+
+.subhead {
   margin: 0;
+  color: rgba(235, 238, 240, 0.52);
+  font-size: 13px;
 }
 
-/* ---------- LINKS ---------- */
-a {
-  color: inherit;
-  text-decoration: none;
+/* ---------- layout ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
 }
 
-/* ---------- CARDS / PANELS ---------- */
-.card {
-  background: var(--background-elevated);
-  border: 1px solid var(--border-soft);
-  border-radius: 14px;
+/* ---------- pill ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(14, 16, 17, 0.85);
+}
 
-  /* warm, premium depth */
-  box-shadow:
-    0 14px 30px var(--shadow-soft),
-    0 2px 0 rgba(255, 255, 255, 0.25) inset;
+.pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(235, 238, 240, 0.22);
+}
 
-  position: relative;
+.pill-good .pill-dot {
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
+}
+
+.pill-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(235, 238, 240, 0.72);
+}
+
+/* ---------- tiles ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.tile {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(
+    180deg,
+    rgba(16, 18, 19, 0.92),
+    rgba(10, 12, 13, 0.92)
+  );
+  border-radius: 16px;
   overflow: hidden;
 }
 
-/* subtle antique-gold edge sheen (barely there) */
-.card::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  pointer-events: none;
-
-  background: radial-gradient(
-    900px 300px at 20% 0%,
-    var(--gold-edge),
-    rgba(176, 140, 74, 0.00) 60%
-  );
-  opacity: 0.25;
+.tile-wide {
+  grid-column: 1 / -1;
 }
 
-/* ---------- BUTTON BASE ---------- */
-button {
-  background: var(--background-elevated);
-  color: var(--foreground);
-  border: 1px solid var(--border-soft);
+.tile-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tile-title {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  font-weight: 900;
+  color: rgba(235, 238, 240, 0.78);
+  text-transform: uppercase;
+}
+
+.tile-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(235, 238, 240, 0.45);
+}
+
+.tile-actions {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ---------- micro actions ---------- */
+.mini {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: rgba(235, 238, 240, 0.82);
   border-radius: 999px;
   padding: 8px 14px;
+  font-weight: 700;
+  font-size: 12px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: all 0.15s ease;
 }
 
-button:hover {
-  border-color: var(--border-warm);
-  box-shadow:
-    0 10px 24px var(--shadow-soft),
-    0 0 0 6px var(--gold-glow);
+.mini:hover {
+  border-color: rgba(255, 255, 255, 0.32);
   transform: translateY(-1px);
 }
 
-button:active {
-  transform: translateY(0px);
+.mini-primary {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.95);
 }
 
-/* ---------- INPUT BASE ---------- */
+.mini-primary:hover {
+  border-color: rgba(255, 255, 255, 0.75);
+}
+
+.arrow {
+  margin-left: 6px;
+  opacity: 0.65;
+}
+
+/* ---------- metrics ---------- */
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 14px 16px 12px;
+}
+
+.metric {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 12px 12px 11px;
+  background: rgba(12, 14, 15, 0.85);
+  position: relative;
+}
+
+.metric::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.metric-good::before { background: #ffffff; }
+.metric-warn::before { background: rgba(210, 170, 90, 0.75); }
+.metric-bad::before  { background: rgba(210, 85, 70, 0.75); }
+
+.metric-label {
+  font-size: 11px;
+  color: rgba(235, 238, 240, 0.45);
+}
+
+.metric-value {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: rgba(235, 238, 240, 0.9);
+}
+
+/* ---------- rows ---------- */
+.rows {
+  padding: 0 16px 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(14, 16, 17, 0.75);
+}
+
+.row-k {
+  color: rgba(235, 238, 240, 0.45);
+  font-size: 12px;
+}
+
+.row-v {
+  color: rgba(235, 238, 240, 0.8);
+  font-size: 12px;
+}
+
+/* ---------- terminal ---------- */
+.terminal {
+  margin: 14px 16px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #050607;
+  padding: 14px;
+  min-height: 260px;
+  white-space: pre-wrap;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.6;
+  color: rgba(235, 238, 240, 0.7);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* ---------- inputs ---------- */
 input {
-  background: var(--background-elevated);
-  color: var(--foreground);
-  border: 1px solid var(--border-soft);
-  border-radius: 10px;
-  padding: 8px 10px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 12, 13, 0.85);
+  color: rgba(235, 238, 240, 0.9);
+  padding: 12px 14px;
   outline: none;
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 input:focus {
-  border-color: var(--border-warm);
-  box-shadow: 0 0 0 6px var(--gold-glow);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.08);
 }
 
-/* Keep system color-scheme sane */
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* ---------- right rail ---------- */
+.rail {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 14, 15, 0.9);
+  border-radius: 18px;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rail {
+    position: static;
+  }
+
+  .tiles {
+    grid-template-columns: 1fr;
+  }
+
+  .headline {
+    font-size: 30px;
   }
 }

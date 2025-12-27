@@ -22,10 +22,32 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`
+          ${geistSans.variable}
+          ${geistMono.variable}
+          antialiased
+        `}
       >
-        {/* Global app shell (used by dashboards + auth pages) */}
-        <div className="app-shell">{children}</div>
+        {/* Black-void app stage */}
+        <div
+          className="app-shell"
+          style={{
+            minHeight: "100vh",
+            background: "#060707",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          {/* Content frame */}
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "1440px",
+            }}
+          >
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );
