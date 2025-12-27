@@ -129,7 +129,7 @@ export default function Page() {
           ) : null}
 
           <button className={styles.primary} type="submit" disabled={!canSubmit}>
-            {loading ? "VERIFYING…" : "INITIATE"}
+            {loading ? "VERIFYING…" : "Log In"}
           </button>
         </form>
 
