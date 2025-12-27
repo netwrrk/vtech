@@ -11,7 +11,7 @@
   padding:56px 18px;
 
   /* THE BACKGROUND (single rule) */
-  background: url("/background.jpg") center / cover no-repeat #050505;
+  background: url("/background.png") center / cover no-repeat #050505;
 
   position:relative;
   overflow:hidden;
