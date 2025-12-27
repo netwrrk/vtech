@@ -1,44 +1,7 @@
 /* =========================================================
    VTech — Editorial Control Dashboard (Refined)
-   Premium luminance hierarchy + state signaling
+   Module-safe: classes only (no *, html, body, :root)
 ========================================================= */
-
-:root {
-  /* ---------- Active ---------- */
-  --green-core: #099247;
-  --green-soft: rgba(12, 156, 72, 0.45);
-  --green-glow: rgba(12, 156, 72, 0.16);
-
-  /* ---------- Error ---------- */
-  --error-core: #8b1e1e;
-  --error-soft: rgba(139, 30, 30, 0.45);
-
-  /* ---------- Typography ---------- */
-  --white-core: rgba(255, 255, 255, 0.96);
-  --white-idle: rgba(235, 238, 240, 0.78);
-  --white-dim: rgba(235, 238, 240, 0.46);
-
-  /* ---------- Surfaces (CRITICAL FIX) ---------- */
-  --page-bg: #0b0e0f;
-  --panel-bg: rgba(18, 21, 23, 0.92);
-  --panel-soft: rgba(22, 26, 28, 0.92);
-  --panel-deep: rgba(10, 12, 13, 0.96);
-
-  --edge-light: rgba(255, 255, 255, 0.06);
-}
-
-/* ---------- page ---------- */
-html,
-body {
-  background:
-    radial-gradient(
-      1200px 600px at 50% -220px,
-      rgba(255, 255, 255, 0.04),
-      transparent 60%
-    ),
-    var(--page-bg);
-  color: var(--white-idle);
-}
 
 /* ---------- shell ---------- */
 .wrap {

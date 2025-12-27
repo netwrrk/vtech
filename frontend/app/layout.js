@@ -1,3 +1,4 @@
+// app/layout.js
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -28,26 +29,9 @@ export default function RootLayout({ children }) {
           antialiased
         `}
       >
-        {/* Black-void app stage */}
-        <div
-          className="app-shell"
-          style={{
-            minHeight: "100vh",
-            background: "#060707",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          {/* Content frame */}
-          <div
-            style={{
-              width: "100%",
-              maxWidth: "1440px",
-            }}
-          >
-            {children}
-          </div>
-        </div>
+        {/* Neutral app wrapper.
+            Pages own their own backgrounds + layout. */}
+        <div className="app-shell">{children}</div>
       </body>
     </html>
   );

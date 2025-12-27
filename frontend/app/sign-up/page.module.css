@@ -1,62 +1,89 @@
+/* =========================================================
+   VTech — Sign-in (Image as THE Background)
+   Background is the image. Everything else is restraint only.
+========================================================= */
+
 .root{
   min-height:100vh;
+  width:100%;
   display:grid;
   place-items:center;
-  padding:40px 18px;
-  background:#050505;
+  padding:56px 18px;
+
+  /* THE BACKGROUND (single rule) */
+  background: url("/background.jpg") center / cover no-repeat #050505;
+
   position:relative;
   overflow:hidden;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 
-/* atmosphere */
+/* Minimal restraint layer (contrast control only) */
 .root::before{
   content:"";
   position:absolute; inset:0;
   background:
-    radial-gradient(1200px 600px at 20% 25%, rgba(255,255,255,0.06), rgba(0,0,0,0) 60%),
-    radial-gradient(900px 500px at 75% 30%, rgba(255,255,255,0.04), rgba(0,0,0,0) 55%),
-    radial-gradient(700px 500px at 50% 80%, rgba(255,255,255,0.03), rgba(0,0,0,0) 60%);
+    /* lighter + cleaner so the image stays crisp */
+    radial-gradient(900px 520px at 50% 50%, rgba(0,0,0,0.18), rgba(0,0,0,0.56) 70%),
+    linear-gradient(180deg, rgba(0,0,0,0.28), rgba(0,0,0,0.46));
   pointer-events:none;
-  filter: blur(0.2px);
+  z-index:0;
 }
 
-.root::after{
-  content:"";
-  position:absolute; inset:-20%;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-  background-size: 140px 140px;
-  opacity:0.12;
-  transform: rotate(-8deg);
-  pointer-events:none;
-}
-
-/* subtle inner frame */
-.frame{
-  position:absolute;
-  width:min(920px, 92vw);
-  height:min(560px, 82vh);
-  border-radius:28px;
-  border:1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.7) inset;
-  opacity:0.35;
-  pointer-events:none;
-}
-
-.card{
-  width:min(460px, 92vw);
-  padding:26px 26px 18px;
-  border-radius:22px;
-  background: rgba(12,12,12,0.62);
-  border: 1px solid rgba(255,255,255,0.10);
-  box-shadow:
-    0 18px 60px rgba(0,0,0,0.65),
-    0 0 0 1px rgba(0,0,0,0.6) inset;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+/* Keep content above the restraint */
+.root > *{
   position:relative;
+  z-index:1;
+}
+
+/* Optional frame: kept for compatibility, but effectively disabled */
+.frame{
+  display:none;
+}
+
+/* ===== BONE PANEL ===== */
+.card{
+  width:min(500px, 92vw);
+  padding:28px 28px 18px;
+  border-radius:16px;
+
+  background: rgba(246,244,238,0.965);
+  border: 1px solid rgba(0,0,0,0.12);
+
+  box-shadow:
+    0 18px 70px rgba(0,0,0,0.62),
+    0 0 0 1px rgba(255,255,255,0.30) inset;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  position:relative;
+  overflow:hidden;
+  z-index:2;
+
+  /* slight editorial offset (not perfectly centered) */
+  transform: translateY(28px);
+}
+
+/* thin “rail” + corner treatment */
+.card::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.08), rgba(0,0,0,0) 22%),
+    linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0) 36%);
+  opacity:0.55;
+  pointer-events:none;
+}
+
+.card::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.012) 0 1px, transparent 1px 18px);
+  opacity:0.45;
+  mix-blend-mode:multiply;
+  pointer-events:none;
 }
 
 .header{
@@ -74,19 +101,19 @@
 }
 
 .dot{
-  width:9px;
-  height:9px;
+  width:8px;
+  height:8px;
   border-radius:999px;
-  background: rgba(255,255,255,0.82);
-  box-shadow: 0 0 0 6px rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.78);
+  box-shadow: 0 0 0 7px rgba(0,0,0,0.06);
 }
 
 .title{
   margin:0;
   font-size:18px;
-  letter-spacing:0.35px;
-  color: rgba(255,255,255,0.88);
-  font-weight:560;
+  letter-spacing:0.32px;
+  color: rgba(0,0,0,0.88);
+  font-weight:600;
 }
 
 .meta{
@@ -96,15 +123,15 @@
 .sub{
   margin:0;
   font-size:12px;
-  letter-spacing:0.22em;
+  letter-spacing:0.24em;
   text-transform:uppercase;
-  color: rgba(255,255,255,0.62);
+  color: rgba(0,0,0,0.62);
 }
 
 .hint{
   margin:6px 0 0 0;
   font-size:12px;
-  color: rgba(255,255,255,0.42);
+  color: rgba(0,0,0,0.48);
 }
 
 .form{
@@ -121,71 +148,90 @@
 
 .label{
   font-size:12px;
-  letter-spacing:0.06em;
-  color: rgba(255,255,255,0.58);
+  letter-spacing:0.08em;
+  color: rgba(0,0,0,0.60);
   text-transform:uppercase;
 }
 
+/* inputs: “cutout” + crisp alignment */
 .input,
 .select{
   height:44px;
-  border-radius:14px;
-  padding: 0 14px;
-  background: rgba(0,0,0,0.35);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.86);
+  border-radius:10px;
+
+  box-sizing:border-box;
+  padding:14px 14px;
+  line-height:1;
+  font-size:14px;
+
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.14);
+  color: rgba(0,0,0,0.88);
+
   outline:none;
-  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 120ms ease;
 }
 
 .input::placeholder{
-  color: rgba(255,255,255,0.30);
+  color: rgba(0,0,0,0.36);
+}
+
+.input{
+  -webkit-appearance:none;
+  appearance:none;
 }
 
 .input:focus,
 .select:focus{
-  border-color: rgba(255,255,255,0.22);
-  box-shadow: 0 0 0 4px rgba(255,255,255,0.06);
-  background: rgba(0,0,0,0.42);
+  border-color: rgba(0,0,0,0.26);
+  box-shadow: 0 0 0 4px rgba(0,0,0,0.06);
+  background: rgba(0,0,0,0.05);
+  transform: translateY(-0.5px);
 }
 
+/* select caret aligned */
 .select{
   appearance:none;
   background-image:
-    linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.55) 50%),
-    linear-gradient(135deg, rgba(255,255,255,0.55) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, rgba(0,0,0,0.65) 50%),
+    linear-gradient(135deg, rgba(0,0,0,0.65) 50%, transparent 50%);
   background-position:
-    calc(100% - 18px) 18px,
-    calc(100% - 13px) 18px;
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
   background-size: 5px 5px, 5px 5px;
   background-repeat:no-repeat;
-  padding-right:34px;
+  padding:14px 34px 14px 14px;
 }
 
 .error{
-  border-radius:14px;
+  border-radius:10px;
   padding:10px 12px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.78);
+  background: rgba(0,0,0,0.045);
+  border: 1px solid rgba(0,0,0,0.12);
+  color: rgba(0,0,0,0.82);
   font-size:13px;
 }
 
 .primary{
-  margin-top:4px;
+  margin-top:6px;
   height:46px;
-  border-radius:16px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(245,245,245,0.92);
-  color:#0a0a0a;
-  font-weight:650;
-  letter-spacing:0.02em;
+
+  border-radius:12px;
+
+  border: 1px solid rgba(0,0,0,0.18);
+  background: rgba(10,10,10,0.97);
+  color: rgba(255,255,255,0.92);
+
+  font-weight:700;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+
   cursor:pointer;
   transition: transform 120ms ease, filter 120ms ease, background 160ms ease;
 }
 
 .primary:hover{
-  filter: brightness(0.98);
+  filter: brightness(1.03);
 }
 
 .primary:active{
@@ -205,7 +251,7 @@
 
 .muted{
   font-size:11px;
-  letter-spacing:0.18em;
+  letter-spacing:0.20em;
   text-transform:uppercase;
-  color: rgba(255,255,255,0.35);
+  color: rgba(0,0,0,0.46);
 }
