@@ -68,6 +68,20 @@ export default function Page() {
       return;
     }
 
+    const userId = data.user.id;
+
+    const { error: profileError } = await supabase
+      .from("Profile")
+      .insert({
+        id: userId,
+        role: role,
+      });
+
+    if (profileError) {
+      setErr("PROFILE CREATION FAILED.");
+      return;
+    }
+
     const userRole = data.user?.user_metadata?.role || role;
     window.location.href =
       userRole === "tech" ? "/tech-dashboard" : "/user-dashboard";
@@ -120,7 +134,7 @@ export default function Page() {
           </label>
 
           {/* Role is intentionally not selectable here */}
-          <input type="hidden" name="role" value={role} />
+           <input type="hidden" name="role" value={role} /> 
 
           {err ? (
             <div className={styles.error} role="alert" aria-live="polite">
