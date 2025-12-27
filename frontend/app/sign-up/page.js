@@ -55,18 +55,23 @@ export default function Page() {
 
   return (
     <main className={styles.root}>
-      <div className={styles.card}>
+      <div className={styles.frame} aria-hidden="true" />
+      <section className={styles.card} aria-label="Authentication">
         <header className={styles.header}>
           <div className={styles.brand}>
             <span className={styles.dot} aria-hidden="true" />
             <h1 className={styles.title}>VTech</h1>
           </div>
-          <p className={styles.sub}>Create an account</p>
+
+          <div className={styles.meta}>
+            <p className={styles.sub}>Access</p>
+            <p className={styles.hint}>Restricted console entry.</p>
+          </div>
         </header>
 
         <form className={styles.form} onSubmit={handleSignUp}>
           <label className={styles.field}>
-            <span>Email</span>
+            <span className={styles.label}>Email</span>
             <input
               className={styles.input}
               type="email"
@@ -74,11 +79,13 @@ export default function Page() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
               autoComplete="email"
+              inputMode="email"
+              required
             />
           </label>
 
           <label className={styles.field}>
-            <span>Password</span>
+            <span className={styles.label}>Password</span>
             <input
               className={styles.input}
               type="password"
@@ -86,32 +93,38 @@ export default function Page() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               autoComplete="new-password"
+              required
             />
           </label>
 
           <label className={styles.field}>
-            <span>Role</span>
+            <span className={styles.label}>Role</span>
             <select
               className={styles.select}
               value={role}
               onChange={(e) => setRole(e.target.value)}
+              aria-label="Role"
             >
               <option value="tech">Tech</option>
               <option value="user">User</option>
             </select>
           </label>
 
-          {err ? <div className={styles.error}>{err}</div> : null}
+          {err ? (
+            <div className={styles.error} role="alert" aria-live="polite">
+              {err}
+            </div>
+          ) : null}
 
           <button className={styles.primary} type="submit" disabled={loading}>
-            {loading ? "Creating..." : "Sign Up"}
+            {loading ? "Authorizing…" : "Enter"}
           </button>
         </form>
 
         <footer className={styles.footer}>
-          <span className={styles.muted}>Tech Console • Supabase Auth</span>
+          <span className={styles.muted}>Console • Auth</span>
         </footer>
-      </div>
+      </section>
     </main>
   );
 }
