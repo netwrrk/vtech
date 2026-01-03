@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import styles from "./page.module.css";
+import { createClient } from "@supabase/supabase-js";
 
 // Role is not a “UI choice” in Liminal Systems.
 // We infer it (query param) and default to tech.
@@ -12,6 +13,11 @@ function inferRole() {
   const r = (qs.get("role") || "").toLowerCase();
   return r === "user" ? "user" : "tech";
 }
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export default function Page() {
   const [mode, setMode] = useState("signup"); // "signup" | "login"
@@ -39,7 +45,8 @@ export default function Page() {
     if (next === "login") setConfirm("");
   }
 
-  async function handleSubmit(e) {
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
 
@@ -50,6 +57,13 @@ export default function Page() {
     if (!emailTrimmed || !passwordTrimmed) {
       setErr("CREDENTIALS REQUIRED.");
       return;
+    }
+
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      return setErr("AUTH CONFIG MISSING.");
     }
 
     if (mode === "signup") {
@@ -65,14 +79,51 @@ export default function Page() {
 
     // Placeholder “submit” state so the UI feels real.
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 450));
-    setLoading(false);
+    
+    try {
+    // Sign up user in Supabase auth
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email: emailTrimmed,
+      password: passwordTrimmed,
+    });
 
-    setErr(
-      mode === "signup"
-        ? "SIGN-UP FLOW NOT CONNECTED YET."
-        : "LOGIN FLOW NOT CONNECTED YET."
-    );
+    if (signUpError) {
+      setErr(signUpError.message);
+      setLoading(false);
+      return;
+    }
+
+    const userId = signUpData.user?.id;
+    if (!userId) {
+      setErr("Failed to get user ID after sign-up.");
+      setLoading(false);
+      return;
+    }
+
+    // Insert into Profile table (RLS safe)
+    const { error: profileError } = await supabase.from("Profile").insert([
+      {
+        id: userId,
+        created_at: new Date(),
+        role: "user",
+      },
+    ]);
+
+    if (profileError) {
+      setErr(profileError.message);
+      setLoading(false);
+      return;
+    }
+
+    // profile creation done
+        setErr("");
+      } catch (err) {
+        setErr(err.message || "UNKNOWN ERROR");
+      } finally {
+        window.location.href = "/user-dashboard";
+        setLoading(false);
+      }
+
   }
 
   const isSignup = mode === "signup";
