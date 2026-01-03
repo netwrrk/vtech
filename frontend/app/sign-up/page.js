@@ -120,8 +120,8 @@ export default function Page() {
       } catch (err) {
         setErr(err.message || "UNKNOWN ERROR");
       } finally {
-        window.location.href = "/user-dashboard";
         setLoading(false);
+        window.location.href = "/user-dashboard";
       }
 
   }
