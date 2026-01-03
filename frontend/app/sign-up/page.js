@@ -1,13 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { createClient } from "@supabase/supabase-js";
 import styles from "./page.module.css";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 // Role is not a “UI choice” in Liminal Systems.
 // We infer it (query param) and default to tech.
@@ -20,65 +14,78 @@ function inferRole() {
 }
 
 export default function Page() {
+  const [mode, setMode] = useState("signup"); // "signup" | "login"
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [role] = useState(inferRole);
+
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
 
   const canSubmit = useMemo(() => {
-    return Boolean(email.trim()) && Boolean(password.trim()) && !loading;
-  }, [email, password, loading]);
+    const hasBase = Boolean(email.trim()) && Boolean(password.trim()) && !loading;
+    if (mode === "login") return hasBase;
+    return hasBase && Boolean(confirm.trim());
+  }, [email, password, confirm, loading, mode]);
 
-  async function handleSignUp(e) {
+  function switchMode(next) {
+    setMode(next);
+    setErr("");
+    setLoading(false);
+
+    // Keep email + password (nice UX), clear confirm when leaving signup
+    if (next === "login") setConfirm("");
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
     setErr("");
 
     const emailTrimmed = email.trim();
     const passwordTrimmed = password.trim();
+    const confirmTrimmed = confirm.trim();
 
     if (!emailTrimmed || !passwordTrimmed) {
       setErr("CREDENTIALS REQUIRED.");
       return;
     }
 
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      setErr("AUTH CONFIG MISSING.");
-      return;
+    if (mode === "signup") {
+      if (!confirmTrimmed) {
+        setErr("CREDENTIALS REQUIRED.");
+        return;
+      }
+      if (passwordTrimmed !== confirmTrimmed) {
+        setErr("PASSWORDS DO NOT MATCH.");
+        return;
+      }
     }
 
+    // Placeholder “submit” state so the UI feels real.
     setLoading(true);
-
-    const { data, error } = await supabase.auth.signUp({
-      email: emailTrimmed,
-      password: passwordTrimmed,
-      options: {
-        data: { role },
-      },
-    });
-
+    await new Promise((r) => setTimeout(r, 450));
     setLoading(false);
 
-    if (error) {
-      // Keep it blunt. No friendly guidance.
-      setErr("ACCESS DENIED.");
-      return;
-    }
-
-    const userRole = data.user?.user_metadata?.role || role;
-    window.location.href =
-      userRole === "tech" ? "/tech-dashboard" : "/user-dashboard";
+    setErr(
+      mode === "signup"
+        ? "SIGN-UP FLOW NOT CONNECTED YET."
+        : "LOGIN FLOW NOT CONNECTED YET."
+    );
   }
+
+  const isSignup = mode === "signup";
 
   return (
     <main className={styles.root}>
       {/* Frame is optional; CSS currently disables it (display:none) */}
       <div className={styles.frame} aria-hidden="true" />
 
-      <section className={styles.card} aria-label="Access checkpoint">
+      <section
+        className={styles.card}
+        aria-label={isSignup ? "Account creation checkpoint" : "Access checkpoint"}
+      >
         <header className={styles.header}>
           <div className={styles.brand}>
             <span className={styles.dot} aria-hidden="true" />
@@ -87,11 +94,13 @@ export default function Page() {
 
           <div className={styles.meta}>
             <p className={styles.sub}>ACCESS</p>
-            <p className={styles.hint}>Restricted console entry.</p>
+            <p className={styles.hint}>
+              {isSignup ? "New account entry." : "Restricted console entry."}
+            </p>
           </div>
         </header>
 
-        <form className={styles.form} onSubmit={handleSignUp} noValidate>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <label className={styles.field}>
             <span className={styles.label}>EMAIL</span>
             <input
@@ -113,11 +122,26 @@ export default function Page() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoComplete="new-password"
+              autoComplete={isSignup ? "new-password" : "current-password"}
               required
               disabled={loading}
             />
           </label>
+
+          {isSignup ? (
+            <label className={styles.field}>
+              <span className={styles.label}>CONFIRM PASSWORD</span>
+              <input
+                className={styles.input}
+                type="password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                autoComplete="new-password"
+                required
+                disabled={loading}
+              />
+            </label>
+          ) : null}
 
           {/* Role is intentionally not selectable here */}
           <input type="hidden" name="role" value={role} />
@@ -129,12 +153,57 @@ export default function Page() {
           ) : null}
 
           <button className={styles.primary} type="submit" disabled={!canSubmit}>
-            {loading ? "VERIFYING…" : "Log In"}
+            {loading ? (isSignup ? "CREATING…" : "VERIFYING…") : isSignup ? "CREATE ACCOUNT" : "LOG IN"}
           </button>
         </form>
 
         <footer className={styles.footer}>
-          <span className={styles.muted}>CONSOLE • AUTH</span>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <span className={styles.muted}>CONSOLE • AUTH</span>
+
+            {isSignup ? (
+              <button
+                type="button"
+                className={styles.muted}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.20em",
+                }}
+                onClick={() => switchMode("login")}
+                aria-label="Switch to log in"
+              >
+                ALREADY HAVE AN ACCOUNT? LOG IN
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={styles.muted}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.20em",
+                }}
+                onClick={() => switchMode("signup")}
+                aria-label="Switch to create account"
+              >
+                NEW HERE? CREATE ACCOUNT
+              </button>
+            )}
+          </div>
         </footer>
       </section>
     </main>
