@@ -54,76 +54,69 @@ export default function Page() {
     const passwordTrimmed = password.trim();
     const confirmTrimmed = confirm.trim();
 
-    if (!emailTrimmed || !passwordTrimmed) {
-      setErr("CREDENTIALS REQUIRED.");
-      return;
-    }
+    // No password or email provided
+    if (!emailTrimmed || !passwordTrimmed) return setErr("CREDENTIALS REQUIRED.");
 
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      return setErr("AUTH CONFIG MISSING.");
-    }
+    // Error code if env local does not have supabase link
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return setErr("AUTH CONFIG MISSING.");
 
     if (mode === "signup") {
-      if (!confirmTrimmed) {
-        setErr("CREDENTIALS REQUIRED.");
-        return;
-      }
-      if (passwordTrimmed !== confirmTrimmed) {
-        setErr("PASSWORDS DO NOT MATCH.");
-        return;
-      }
+      if (!confirmTrimmed) return setErr("CREDENTIALS REQUIRED."); // Confirm password empty
+      if (passwordTrimmed !== confirmTrimmed) return setErr("PASSWORDS DO NOT MATCH."); // Password and confirm password not matching
     }
 
-    // Placeholder “submit” state so the UI feels real.
-    setLoading(true);
+    setLoading(true); // Disables submit button to load preventing double submit
     
     try {
-    // Sign up user in Supabase auth
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      if (mode === "signup") await createAccount(emailTrimmed, passwordTrimmed); // If signing up, move to createAccount function
+    } catch (err) {
+      setErr(err.message || "REDIRECTION ERROR");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function createAccount(emailTrimmed, passwordTrimmed) {
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ // Creates new row in supabase
       email: emailTrimmed,
       password: passwordTrimmed,
     });
 
     if (signUpError) {
-      setErr(signUpError.message);
       setLoading(false);
-      return;
+      return setErr(signUpError.message);
     }
 
-    const userId = signUpData.user?.id;
+    const userId = signUpData.user?.id; // Grabs the UID from user's supabase row
     if (!userId) {
-      setErr("Failed to get user ID after sign-up.");
       setLoading(false);
-      return;
+      return setErr("Failed to get user ID after sign-up.");
     }
 
-    // Insert into Profile table (RLS safe)
+    // Insert into Profile table which holds the role "tech" or "user"
     const { error: profileError } = await supabase.from("Profile").insert([
       {
         id: userId,
         created_at: new Date(),
-        role: "user",
+        role: "user", // auto assign new account to user
       },
     ]);
 
     if (profileError) {
-      setErr(profileError.message);
       setLoading(false);
-      return;
+      return setErr(profileError.message);
     }
 
     // profile creation done
-        setErr("");
-      } catch (err) {
-        setErr(err.message || "UNKNOWN ERROR");
-      } finally {
-        setLoading(false);
-        window.location.href = "/user-dashboard";
-      }
+    try {
 
+    window.location.href = "/user-dashboard"
+    } catch (err) {
+      setErr(err.message || "ERROR REDIRECTING TO DASHBOARD");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const isSignup = mode === "signup";
