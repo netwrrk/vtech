@@ -20,8 +20,7 @@ const supabase = createClient(
 );
 
 export default function Page() {
-  // Default should be SIGN IN first (login), not sign up
-  const [mode, setMode] = useState("login"); // "signup" | "login"
+  const [mode, setMode] = useState("signup"); // "signup" | "login"
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +45,7 @@ export default function Page() {
     if (next === "login") setConfirm("");
   }
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -58,8 +58,7 @@ export default function Page() {
     if (!emailTrimmed || !passwordTrimmed) return setErr("CREDENTIALS REQUIRED.");
 
     // Error code if env local does not have supabase link
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-      return setErr("AUTH CONFIG MISSING.");
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return setErr("AUTH CONFIG MISSING.");
 
     if (mode === "signup") {
       if (!confirmTrimmed) return setErr("CREDENTIALS REQUIRED."); // Confirm password empty
@@ -67,72 +66,81 @@ export default function Page() {
     }
 
     setLoading(true); // Disables submit button to load preventing double submit
-
+    
     try {
-      if (mode === "signup") {
-        await createAccount(emailTrimmed, passwordTrimmed);
-      } else {
-        await login(emailTrimmed, passwordTrimmed);
-      }
+      if (mode === "signup") await createAccount(emailTrimmed, passwordTrimmed); // If signing up, move to createAccount function
+      if (mode === "login") await signIn(emailTrimmed, passwordTrimmed); // If signing in, move to signIn function
     } catch (err) {
-      setErr(err?.message || "AUTH ERROR");
+      setErr(err.message || "REDIRECTION ERROR");
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   async function createAccount(emailTrimmed, passwordTrimmed) {
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ // Creates new row in supabase
       email: emailTrimmed,
       password: passwordTrimmed,
     });
-
     if (signUpError) return setErr(signUpError.message);
 
     const userId = signUpData.user?.id; // Grabs the UID from user's supabase row
-    if (!userId) return setErr("Failed to get user ID after sign-up.");
-
-    const safeRole = role === "user" ? "user" : "tech";
+    if (!userId) {
+      setLoading(false);
+      return setErr("Failed to get user ID after sign-up.");
+    }
 
     // Insert into Profile table which holds the role "tech" or "user"
     const { error: profileError } = await supabase.from("Profile").insert([
       {
         id: userId,
         created_at: new Date(),
-        role: safeRole,
+        role: "user", // auto assign new account to user
       },
     ]);
-
     if (profileError) return setErr(profileError.message);
 
-    // redirect by role
-    window.location.href = safeRole === "tech" ? "/tech-dashboard" : "/user-dashboard";
+    // profile creation done
+    try {
+    window.location.href = "/user-dashboard"
+    } catch (err) {
+      setErr(err.message || "ERROR REDIRECTING TO DASHBOARD");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function login(emailTrimmed, passwordTrimmed) {
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email: emailTrimmed,
-      password: passwordTrimmed,
-    });
-
-    if (signInError) return setErr(signInError.message);
-
-    const userId = signInData.user?.id;
-    if (!userId) return setErr("FAILED TO GET USER.");
-
-    // Pull role from Profile and route accordingly
-    const { data: profile, error: profileError } = await supabase
-      .from("Profile")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (profileError) return setErr(profileError.message);
-
-    const r = (profile?.role || "").toLowerCase();
-    const isTech = r === "tech";
-
-    window.location.href = isTech ? "/tech-dashboard" : "/user-dashboard";
+  async function signIn(emailTrimmed, passwordTrimmed) { 
+    const { data: signInData, error: signInError } = 
+      await supabase.auth.signInWithPassword({ 
+        email: emailTrimmed, 
+        password: passwordTrimmed, 
+      }); // Authenticates user and makes sure email and password are right 
+    if (signInError) return setErr("INVALID USERNAME OR PASSWORD"); 
+    
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession(); 
+    if (sessionError || !session) return setErr("Failed to get session after sign-in"); 
+    
+    const userId = session.user.id; 
+    if (!userId) return setErr("Failed to get user ID after sign-in."); 
+    
+    try { 
+      const res = await fetch("/api/getProfileRole", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" }, 
+        body: JSON.stringify({ userId }), 
+      }); 
+      
+      const result = await res.json(); 
+      if (!res.ok) return setErr(result.error || "Failed to get profile role"); 
+      
+      const role = result.role || "user"; 
+      if (role === "tech") window.location.href = "/tech-dashboard";
+      else window.location.href = "/user-dashboard"; 
+    } catch (err) { 
+      setErr(err.message || "ERROR FETCHING PROFILE ROLE"); 
+    } 
   }
 
   const isSignup = mode === "signup";
