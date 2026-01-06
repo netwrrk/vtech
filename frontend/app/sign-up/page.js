@@ -20,7 +20,8 @@ const supabase = createClient(
 );
 
 export default function Page() {
-  const [mode, setMode] = useState("signup"); // "signup" | "login"
+  // Default should be SIGN IN first (login), not sign up
+  const [mode, setMode] = useState("login"); // "signup" | "login"
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,7 +46,6 @@ export default function Page() {
     if (next === "login") setConfirm("");
   }
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -58,7 +58,8 @@ export default function Page() {
     if (!emailTrimmed || !passwordTrimmed) return setErr("CREDENTIALS REQUIRED.");
 
     // Error code if env local does not have supabase link
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return setErr("AUTH CONFIG MISSING.");
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      return setErr("AUTH CONFIG MISSING.");
 
     if (mode === "signup") {
       if (!confirmTrimmed) return setErr("CREDENTIALS REQUIRED."); // Confirm password empty
@@ -66,57 +67,72 @@ export default function Page() {
     }
 
     setLoading(true); // Disables submit button to load preventing double submit
-    
+
     try {
-      if (mode === "signup") await createAccount(emailTrimmed, passwordTrimmed); // If signing up, move to createAccount function
+      if (mode === "signup") {
+        await createAccount(emailTrimmed, passwordTrimmed);
+      } else {
+        await login(emailTrimmed, passwordTrimmed);
+      }
     } catch (err) {
-      setErr(err.message || "REDIRECTION ERROR");
+      setErr(err?.message || "AUTH ERROR");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   async function createAccount(emailTrimmed, passwordTrimmed) {
-
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ // Creates new row in supabase
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: emailTrimmed,
       password: passwordTrimmed,
     });
 
-    if (signUpError) {
-      setLoading(false);
-      return setErr(signUpError.message);
-    }
+    if (signUpError) return setErr(signUpError.message);
 
     const userId = signUpData.user?.id; // Grabs the UID from user's supabase row
-    if (!userId) {
-      setLoading(false);
-      return setErr("Failed to get user ID after sign-up.");
-    }
+    if (!userId) return setErr("Failed to get user ID after sign-up.");
+
+    const safeRole = role === "user" ? "user" : "tech";
 
     // Insert into Profile table which holds the role "tech" or "user"
     const { error: profileError } = await supabase.from("Profile").insert([
       {
         id: userId,
         created_at: new Date(),
-        role: "user", // auto assign new account to user
+        role: safeRole,
       },
     ]);
 
-    if (profileError) {
-      setLoading(false);
-      return setErr(profileError.message);
-    }
+    if (profileError) return setErr(profileError.message);
 
-    // profile creation done
-    try {
+    // redirect by role
+    window.location.href = safeRole === "tech" ? "/tech-dashboard" : "/user-dashboard";
+  }
 
-    window.location.href = "/user-dashboard"
-    } catch (err) {
-      setErr(err.message || "ERROR REDIRECTING TO DASHBOARD");
-    } finally {
-      setLoading(false);
-    }
+  async function login(emailTrimmed, passwordTrimmed) {
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email: emailTrimmed,
+      password: passwordTrimmed,
+    });
+
+    if (signInError) return setErr(signInError.message);
+
+    const userId = signInData.user?.id;
+    if (!userId) return setErr("FAILED TO GET USER.");
+
+    // Pull role from Profile and route accordingly
+    const { data: profile, error: profileError } = await supabase
+      .from("Profile")
+      .select("role")
+      .eq("id", userId)
+      .single();
+
+    if (profileError) return setErr(profileError.message);
+
+    const r = (profile?.role || "").toLowerCase();
+    const isTech = r === "tech";
+
+    window.location.href = isTech ? "/tech-dashboard" : "/user-dashboard";
   }
 
   const isSignup = mode === "signup";
