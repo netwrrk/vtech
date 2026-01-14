@@ -1,8 +1,10 @@
 // frontend/app/user-dashboard/components/SlideAction.js
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "../page.module.css";
+
+const STROKE = 1.6;
 
 function IconLock(props) {
   return (
@@ -10,13 +12,13 @@ function IconLock(props) {
       <path
         d="M7 11V8.5A5 5 0 0 1 12 3a5 5 0 0 1 5 5.5V11"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth={STROKE}
         strokeLinecap="round"
       />
       <path
         d="M6.5 11h11A2.5 2.5 0 0 1 20 13.5v5A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-5A2.5 2.5 0 0 1 6.5 11Z"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth={STROKE}
       />
     </svg>
   );
@@ -28,13 +30,13 @@ function IconUnlock(props) {
       <path
         d="M9 11V8.7A4.2 4.2 0 0 1 13.2 4.5c2.32 0 4.2 1.88 4.2 4.2"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth={STROKE}
         strokeLinecap="round"
       />
       <path
         d="M6.5 11h11A2.5 2.5 0 0 1 20 13.5v5A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-5A2.5 2.5 0 0 1 6.5 11Z"
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth={STROKE}
       />
     </svg>
   );
@@ -46,7 +48,7 @@ function IconArrow(props) {
       <path
         d="M9 6l6 6-6 6"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -62,39 +64,37 @@ export default function SlideAction({
   completeAt = 0.86, // % of track travel required
 }) {
   const trackRef = useRef(null);
+  const thumbRef = useRef(null);
+
   const [dragX, setDragX] = useState(0);
   const [dragging, setDragging] = useState(false);
 
-  const dims = useMemo(() => {
+  const DRAG_LEFT_INSET = 6;
+  const THUMB_SIZE = 44;
+  const DRAG_RIGHT_INSET = 6;
+
+  const getMaxX = () => {
     const el = trackRef.current;
-    if (!el) return { maxX: 0 };
-    // thumb is 44px; left inset is 6px; right inset is 6px
+    if (!el) return 0;
     const trackW = el.getBoundingClientRect().width;
-    const maxX = Math.max(0, trackW - (6 + 44 + 6));
-    return { maxX };
-  }, [trackRef.current]);
+    return Math.max(0, trackW - (DRAG_LEFT_INSET + THUMB_SIZE + DRAG_RIGHT_INSET));
+  };
+
+  const clamp = (x, maxX) => Math.min(Math.max(0, x), maxX);
 
   useEffect(() => {
     const onResize = () => {
-      // force a gentle clamp on resize
-      const el = trackRef.current;
-      if (!el) return;
-      const trackW = el.getBoundingClientRect().width;
-      const maxX = Math.max(0, trackW - (6 + 44 + 6));
-      setDragX((x) => Math.min(Math.max(0, x), maxX));
+      const maxX = getMaxX();
+      setDragX((x) => clamp(x, maxX));
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  function clamp(x, maxX) {
-    return Math.min(Math.max(0, x), maxX);
-  }
-
   function handlePointerDown(e) {
     if (disabled) return;
     setDragging(true);
-    e.currentTarget.setPointerCapture?.(e.pointerId);
+    thumbRef.current?.setPointerCapture?.(e.pointerId);
   }
 
   function handlePointerMove(e) {
@@ -103,32 +103,41 @@ export default function SlideAction({
     if (!el) return;
 
     const rect = el.getBoundingClientRect();
-    const maxX = Math.max(0, rect.width - (6 + 44 + 6));
+    const maxX = Math.max(0, rect.width - (DRAG_LEFT_INSET + THUMB_SIZE + DRAG_RIGHT_INSET));
+
     // pointer position relative to track, minus thumb center offset
-    const raw = e.clientX - rect.left - 6 - 22;
+    const raw = e.clientX - rect.left - DRAG_LEFT_INSET - THUMB_SIZE / 2;
     setDragX(clamp(raw, maxX));
+  }
+
+  function complete() {
+    const maxX = getMaxX();
+    setDragX(maxX);
+    onComplete?.();
+    setTimeout(() => setDragX(0), 450);
+  }
+
+  function cancel() {
+    setDragX(0);
   }
 
   function finishDrag() {
     if (disabled) return;
     setDragging(false);
 
-    const el = trackRef.current;
-    if (!el) {
-      setDragX(0);
-      return;
-    }
-    const rect = el.getBoundingClientRect();
-    const maxX = Math.max(0, rect.width - (6 + 44 + 6));
+    const maxX = getMaxX();
     const pct = maxX === 0 ? 0 : dragX / maxX;
 
-    if (pct >= completeAt) {
-      setDragX(maxX);
-      onComplete?.();
-      // reset after a short beat so it feels intentional
-      setTimeout(() => setDragX(0), 450);
-    } else {
-      setDragX(0);
+    if (pct >= completeAt) complete();
+    else cancel();
+  }
+
+  // Keyboard support (tab + enter/space to complete)
+  function handleKeyDown(e) {
+    if (disabled) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      complete();
     }
   }
 
@@ -150,18 +159,22 @@ export default function SlideAction({
           </div>
 
           <div
+            ref={thumbRef}
             className={styles.slideThumb}
             role="button"
             tabIndex={disabled ? -1 : 0}
             aria-label={label}
+            aria-disabled={disabled}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={finishDrag}
             onPointerCancel={finishDrag}
+            onKeyDown={handleKeyDown}
             style={{
               transform: `translateX(${dragX}px)`,
               opacity: disabled ? 0.55 : 1,
               pointerEvents: disabled ? "none" : "auto",
+              cursor: disabled ? "not-allowed" : dragging ? "grabbing" : "grab",
             }}
           >
             <IconUnlock />
