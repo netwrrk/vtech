@@ -1,0 +1,66 @@
+/* =========================================================
+   VTech — Global (Liminal Systems)
+   Globals only: resets, tokens, NO layout framing
+========================================================= */
+
+/* ---------- reset / base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+    Arial, "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* IMPORTANT:
+     Do NOT impose a background here.
+     Pages (like sign-in) fully own their background. */
+  background: transparent;
+  color: var(--white-idle);
+}
+
+/* ---------- tokens ---------- */
+:root {
+  /* ---------- Active ---------- */
+  --green-core: #099247;
+  --green-soft: rgba(12, 156, 72, 0.45);
+  --green-glow: rgba(12, 156, 72, 0.16);
+
+  /* ---------- Error ---------- */
+  --error-core: #8b1e1e;
+  --error-soft: rgba(139, 30, 30, 0.45);
+
+  /* ---------- Typography ---------- */
+  --white-core: rgba(255, 255, 255, 0.96);
+  --white-idle: rgba(235, 238, 240, 0.78);
+  --white-dim: rgba(235, 238, 240, 0.46);
+
+  /* ---------- Surfaces (used by internal dashboards only) ---------- */
+  --page-bg: #0b0e0f;
+  --panel-bg: rgba(18, 21, 23, 0.92);
+  --panel-soft: rgba(22, 26, 28, 0.92);
+  --panel-deep: rgba(10, 12, 13, 0.96);
+
+  --edge-light: rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- app shell (neutral by default) ---------- */
+.app-shell {
+  min-height: 100vh;
+  width: 100%;
+  background: transparent;
+}
