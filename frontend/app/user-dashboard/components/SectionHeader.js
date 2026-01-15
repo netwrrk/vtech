@@ -4,9 +4,9 @@
 import styles from "../page.module.css";
 
 export default function SectionHeader({
-  title,
+  title = "",
   onMore,
-  moreLabel = "More",
+  moreLabel = "More options",
 }) {
   return (
     <div className={styles.sectionRow}>
@@ -14,7 +14,7 @@ export default function SectionHeader({
 
       <button
         type="button"
-        className={`${styles.iconBtn} ${styles.moreBtn}`}
+        className={styles.iconBtn}
         aria-label={moreLabel}
         onClick={onMore}
       >

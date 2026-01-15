@@ -1,7 +1,9 @@
 /* user-dashboard/page.module.css
    VTech User Dashboard — Phase 1.1 (Editorial Tweaks before Phase 2)
-   Goal: sharper “lab” structure, slightly less rounded, ink dividers over soft edges,
-         soften primary CTA (charcoal, not pure black), de-iOS the nav a bit.
+   UPDATED: match “smart home” reference layout
+   - Greeting moved into body (pageTitle + helperText)
+   - HeroCard + SlideAction no longer part of layout (styles kept harmless if reused later)
+   - Chips row tuned to read like icon-chips
 */
 
 .root {
@@ -14,7 +16,8 @@
   display: grid;
   place-items: start center;
   padding: 22px 16px 26px;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial;
 
   position: relative;
   overflow: hidden;
@@ -25,20 +28,31 @@
 }
 
 /* soft fog / paper grain (light-mode) */
-.root::before{
-  content:"";
-  position:absolute;
-  inset:-24%;
-  background:
-    radial-gradient(900px 600px at 16% 18%, rgba(255,255,255,0.55), rgba(255,255,255,0) 62%),
-    radial-gradient(820px 560px at 78% 26%, rgba(0,0,0,0.14), rgba(0,0,0,0) 62%),
-    radial-gradient(760px 560px at 48% 92%, rgba(0,0,0,0.10), rgba(0,0,0,0) 66%),
+.root::before {
+  content: "";
+  position: absolute;
+  inset: -24%;
+  background: radial-gradient(
+        900px 600px at 16% 18%,
+        rgba(255, 255, 255, 0.55),
+        rgba(255, 255, 255, 0) 62%
+      ),
+    radial-gradient(
+        820px 560px at 78% 26%,
+        rgba(0, 0, 0, 0.14),
+        rgba(0, 0, 0, 0) 62%
+      ),
+    radial-gradient(
+        760px 560px at 48% 92%,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0) 66%
+      ),
     repeating-linear-gradient(
       0deg,
-      rgba(0,0,0,0.012) 0px,
-      rgba(0,0,0,0.012) 1px,
-      rgba(0,0,0,0.00) 2px,
-      rgba(0,0,0,0.00) 4px
+      rgba(0, 0, 0, 0.012) 0px,
+      rgba(0, 0, 0, 0.012) 1px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0) 4px
     );
   opacity: 0.95;
   pointer-events: none;
@@ -46,13 +60,22 @@
 }
 
 /* vignette (very subtle — “gallery wall”, not dark mode) */
-.root::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(closest-side at 50% 26%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.10) 72%, rgba(0,0,0,0.16) 100%),
-    linear-gradient(to bottom, rgba(0,0,0,0.06), rgba(0,0,0,0) 30%, rgba(0,0,0,0.08));
+.root::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+        closest-side at 50% 26%,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.1) 72%,
+        rgba(0, 0, 0, 0.16) 100%
+      ),
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.06),
+      rgba(0, 0, 0, 0) 30%,
+      rgba(0, 0, 0, 0.08)
+    );
   opacity: 0.75;
   pointer-events: none;
   z-index: 0;
@@ -62,7 +85,7 @@
   width: 100%;
   max-width: 420px;
   display: grid;
-  gap: 14px;
+  gap: 12px;
 
   position: relative;
   z-index: 1;
@@ -77,14 +100,21 @@
   padding: 6px 2px;
 }
 
+/* keep center column empty-friendly */
+.titleWrap {
+  display: grid;
+  gap: 3px;
+  min-height: 40px;
+}
+
 .iconBtn {
   width: 40px;
   height: 40px;
   border-radius: 14px; /* less bubbly */
 
-  border: 1px solid rgba(0,0,0,0.16);
-  background: rgba(255,255,255,0.52);
-  color: rgba(12,12,12,0.88);
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: rgba(255, 255, 255, 0.52);
+  color: rgba(12, 12, 12, 0.88);
 
   display: grid;
   place-items: center;
@@ -94,18 +124,13 @@
 
 .iconBtn:hover {
   transform: translateY(-1px);
-  background: rgba(255,255,255,0.64);
-  border-color: rgba(0,0,0,0.20);
-}
-
-.titleWrap {
-  display: grid;
-  gap: 3px;
+  background: rgba(255, 255, 255, 0.64);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
 .kicker {
   font-size: 11px;
-  letter-spacing: 0.30em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: rgba(12, 12, 12, 0.55);
   font-weight: 650;
@@ -116,13 +141,23 @@
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-weight: 780;
-  color: rgba(12,12,12,0.92);
+  color: rgba(12, 12, 12, 0.92);
 }
 
-/* ---------- Subline (moved from inline) ---------- */
-.sublineWrap{
-  margin-top: -6px;
-  margin-bottom: 6px;
+/* ---------- Greeting block (matches reference) ---------- */
+.sublineWrap {
+  display: grid;
+  gap: 4px;
+  margin-top: -2px;
+  margin-bottom: 4px;
+}
+
+.pageTitle {
+  font-size: 34px;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 820;
+  color: rgba(12, 12, 12, 0.92);
 }
 
 .helperText {
@@ -131,8 +166,8 @@
   font-weight: 600;
 }
 
-/* ---------- Category Chips (new component) ---------- */
-.categoryRow{
+/* ---------- Category Chips (tuned toward icon-chips row) ---------- */
+.categoryRow {
   display: flex;
   gap: 10px;
   overflow-x: auto;
@@ -141,19 +176,26 @@
 
   scrollbar-width: none; /* Firefox */
 }
-.categoryRow::-webkit-scrollbar{
+.categoryRow::-webkit-scrollbar {
   display: none; /* WebKit */
 }
 
-.chip{
+.chip {
   flex: 0 0 auto;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: 12px;
 
-  border: 1px solid rgba(0,0,0,0.12);
-  background: rgba(255,255,255,0.44);
-  color: rgba(12,12,12,0.78);
+  /* more “tile” than “pill” */
+  min-width: 82px;
+  height: 66px;
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.44);
+  color: rgba(12, 12, 12, 0.78);
+
+  display: grid;
+  place-items: center;
+  gap: 6px;
 
   font-size: 12px;
   font-weight: 750;
@@ -163,30 +205,56 @@
   transition: transform 120ms ease, background 120ms ease, border 120ms ease;
 }
 
-.chip:hover{
+.chip:hover {
   transform: translateY(-1px);
-  background: rgba(255,255,255,0.58);
-  border-color: rgba(0,0,0,0.16);
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(0, 0, 0, 0.16);
 }
 
-.chipActive{
-  background: rgba(18,18,18,0.86);
-  border-color: rgba(0,0,0,0.18);
-  color: rgba(255,255,255,0.92);
+.chipActive {
+  background: rgba(18, 18, 18, 0.86);
+  border-color: rgba(0, 0, 0, 0.18);
+  color: rgba(255, 255, 255, 0.92);
 }
 
-/* ---------- Hero Card ---------- */
+/* optional helpers if CategoryChips uses inner elements */
+.chipIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.34);
+  color: rgba(12, 12, 12, 0.82);
+}
+
+.chipActive .chipIcon {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.chipLabel {
+  font-size: 11px;
+  font-weight: 780;
+  color: inherit;
+  opacity: 0.95;
+}
+
+/* ---------- Hero Card (unused in current layout; kept for later) ---------- */
 .heroCard {
   border-radius: 16px; /* slightly sharper */
   padding: 18px 16px;
 
-  background: rgba(255,255,255,0.58);
+  background: rgba(255, 255, 255, 0.58);
 
   /* ink hairline */
-  border: 1px solid rgba(0,0,0,0.16);
+  border: 1px solid rgba(0, 0, 0, 0.16);
 
   /* slightly lighter depth */
-  box-shadow: 0 16px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12);
 
   display: grid;
   grid-template-columns: 1fr 140px;
@@ -198,14 +266,20 @@
   -webkit-backdrop-filter: none;
 }
 
-/* subtle internal paper bloom */
 .heroCard::before {
   content: "";
   position: absolute;
   inset: -25%;
-  background:
-    radial-gradient(640px 420px at 18% 26%, rgba(255,255,255,0.40), rgba(255,255,255,0) 62%),
-    radial-gradient(520px 360px at 84% 34%, rgba(0,0,0,0.10), rgba(0,0,0,0) 60%);
+  background: radial-gradient(
+        640px 420px at 18% 26%,
+        rgba(255, 255, 255, 0.4),
+        rgba(255, 255, 255, 0) 62%
+      ),
+    radial-gradient(
+        520px 360px at 84% 34%,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0) 60%
+      );
   opacity: 0.75;
   pointer-events: none;
 }
@@ -233,35 +307,34 @@
   font-size: 30px;
   font-weight: 820;
   letter-spacing: -0.02em;
-  color: rgba(12,12,12,0.92);
+  color: rgba(12, 12, 12, 0.92);
 }
 
 .statLabel {
   font-size: 12px;
-  color: rgba(12, 12, 12, 0.60);
+  color: rgba(12, 12, 12, 0.6);
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
-/* spec-row pill (ink hairline) */
 .pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 10px 10px;
-  border-radius: 12px; /* slightly sharper */
+  border-radius: 12px;
 
-  background: rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.16);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.16);
   box-shadow: none;
 }
 
 .pillMain {
   font-size: 16px;
   font-weight: 780;
-  color: rgba(12,12,12,0.92);
+  color: rgba(12, 12, 12, 0.92);
 }
 
 .pillSub {
@@ -280,37 +353,52 @@
 .deviceMock {
   width: 120px;
   height: 160px;
-  border-radius: 14px; /* less rounded */
+  border-radius: 14px;
 
-  background: linear-gradient(160deg, rgba(0,0,0,0.08), rgba(0,0,0,0.02));
-  border: 1px solid rgba(0,0,0,0.18);
-  box-shadow: 0 18px 34px rgba(0,0,0,0.14);
+  background: linear-gradient(
+    160deg,
+    rgba(0, 0, 0, 0.08),
+    rgba(0, 0, 0, 0.02)
+  );
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.14);
 
   position: relative;
   overflow: hidden;
 }
 
 .deviceMock::before {
-  content:"";
-  position:absolute;
-  inset:-40%;
-  background: linear-gradient(120deg, rgba(255,255,255,0.45), rgba(255,255,255,0) 56%);
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.45),
+    rgba(255, 255, 255, 0) 56%
+  );
   transform: rotate(12deg);
-  opacity: 0.40;
-  pointer-events:none;
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 .deviceMock::after {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(120px 120px at 65% 20%, rgba(255,255,255,0.35), rgba(255,255,255,0) 62%),
-    radial-gradient(140px 140px at 30% 85%, rgba(0,0,0,0.10), rgba(0,0,0,0) 62%);
+  background: radial-gradient(
+        120px 120px at 65% 20%,
+        rgba(255, 255, 255, 0.35),
+        rgba(255, 255, 255, 0) 62%
+      ),
+    radial-gradient(
+        140px 140px at 30% 85%,
+        rgba(0, 0, 0, 0.1),
+        rgba(0, 0, 0, 0) 62%
+      );
   opacity: 0.85;
 }
 
-/* ---------- Slide Action ---------- */
+/* ---------- Slide Action (unused in current layout; kept for later) ---------- */
 .slideWrap {
   display: grid;
   gap: 10px;
@@ -326,10 +414,10 @@
 .slideDot {
   width: 56px;
   height: 56px;
-  border-radius: 16px; /* less iOS-circle */
+  border-radius: 16px;
 
-  border: 1px solid rgba(0,0,0,0.16);
-  background: rgba(255,255,255,0.50);
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: rgba(255, 255, 255, 0.5);
 
   display: grid;
   place-items: center;
@@ -338,25 +426,24 @@
 
 .slideTrack {
   height: 56px;
-  border-radius: 16px; /* more mechanical */
-  border: 1px solid rgba(0,0,0,0.16);
-  background: rgba(255,255,255,0.44);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: rgba(255, 255, 255, 0.44);
 
   position: relative;
   overflow: hidden;
 }
 
-/* add subtle “rail” divider (structure > softness) */
-.slideTrack::before{
-  content:"";
-  position:absolute;
+.slideTrack::before {
+  content: "";
+  position: absolute;
   left: 18px;
   right: 18px;
   top: 50%;
   height: 1px;
-  background: rgba(0,0,0,0.10);
+  background: rgba(0, 0, 0, 0.1);
   transform: translateY(-0.5px);
-  pointer-events:none;
+  pointer-events: none;
   opacity: 0.9;
 }
 
@@ -366,7 +453,7 @@
   display: grid;
   place-items: center;
   font-size: 12px;
-  color: rgba(12,12,12,0.55);
+  color: rgba(12, 12, 12, 0.55);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 780;
@@ -384,15 +471,14 @@
   top: 6px;
   width: 44px;
   height: 44px;
-  border-radius: 14px; /* less toy */
+  border-radius: 14px;
 
-  /* charcoal thumb (still primary, less “blob”) */
-  background: rgba(18,18,18,0.88);
-  color: rgba(255,255,255,0.92);
+  background: rgba(18, 18, 18, 0.88);
+  color: rgba(255, 255, 255, 0.92);
   display: grid;
   place-items: center;
 
-  box-shadow: 0 12px 22px rgba(0,0,0,0.20);
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.2);
   user-select: none;
   touch-action: none;
   cursor: grab;
@@ -402,8 +488,8 @@
   cursor: grabbing;
 }
 
-/* ---------- Section Header (new component) ---------- */
-.sectionRow{
+/* ---------- Section Header ---------- */
+.sectionRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -411,20 +497,20 @@
   margin-bottom: 2px;
 }
 
-.sectionTitle{
+.sectionTitle {
   font-size: 14px;
   font-weight: 820;
-  color: rgba(12,12,12,0.92);
+  color: rgba(12, 12, 12, 0.92);
 }
 
-.moreEllipsis{
+.moreEllipsis {
   font-size: 18px;
   line-height: 1;
   transform: translateY(-1px);
   display: inline-block;
 }
 
-/* ---------- Action Tiles / Device Grid ---------- */
+/* ---------- Device Grid / Tiles ---------- */
 .tiles {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -432,14 +518,14 @@
 }
 
 .tile {
-  border-radius: 14px; /* slightly sharper */
+  border-radius: 14px;
   padding: 14px 14px 12px;
 
-  background: rgba(255,255,255,0.56);
-  border: 1px solid rgba(0,0,0,0.16);
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(0, 0, 0, 0.16);
   box-shadow: none;
 
-  min-height: 92px;
+  min-height: 112px;
   display: grid;
   align-content: space-between;
   cursor: pointer;
@@ -448,31 +534,30 @@
 
 .tile:hover {
   transform: translateY(-1px);
-  background: rgba(255,255,255,0.64);
-  border-color: rgba(0,0,0,0.20);
+  background: rgba(255, 255, 255, 0.64);
+  border-color: rgba(0, 0, 0, 0.2);
 }
 
-/* used by page.js to kill inline textAlign */
-.tileLeft{
+.tileLeft {
   text-align: left;
 }
 
-/* PRIMARY: charcoal (less harsh than pure black) */
+/* PRIMARY: charcoal */
 .tileAccent {
-  background: rgba(18,18,18,0.86);
-  border-color: rgba(18,18,18,0.64);
+  background: rgba(18, 18, 18, 0.86);
+  border-color: rgba(18, 18, 18, 0.64);
 }
 
 .tileAccent .tileLabel {
-  color: rgba(255,255,255,0.92);
+  color: rgba(255, 255, 255, 0.92);
 }
 .tileAccent .tileSub {
-  color: rgba(255,255,255,0.64);
+  color: rgba(255, 255, 255, 0.64);
 }
 .tileAccent .tileIcon {
-  border-color: rgba(255,255,255,0.20);
-  background: rgba(255,255,255,0.10);
-  color: rgba(255,255,255,0.90);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .tileTop {
@@ -485,16 +570,16 @@
 .tileIcon {
   width: 44px;
   height: 44px;
-  border-radius: 14px; /* less bubbly */
+  border-radius: 14px;
   display: grid;
   place-items: center;
 
-  border: 1px solid rgba(0,0,0,0.16);
-  background: rgba(255,255,255,0.46);
-  color: rgba(12,12,12,0.86);
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  background: rgba(255, 255, 255, 0.46);
+  color: rgba(12, 12, 12, 0.86);
 }
 
-.tileGlyph{
+.tileGlyph {
   font-size: 12px;
   opacity: 0.85;
 }
@@ -504,32 +589,31 @@
   font-weight: 780;
   line-height: 1.15;
   letter-spacing: -0.01em;
-  color: rgba(12,12,12,0.92);
+  color: rgba(12, 12, 12, 0.92);
 }
 
 .tileSub {
   margin-top: 6px;
   font-size: 12px;
-  color: rgba(12,12,12,0.60);
+  color: rgba(12, 12, 12, 0.6);
   font-weight: 600;
 }
 
 /* ---------- Bottom Nav ---------- */
 .bottomNav {
-  margin-top: 8px;
+  margin-top: 10px;
 
-  border-radius: 16px; /* slightly sharper */
+  border-radius: 16px;
   padding: 10px 12px;
 
-  background: rgba(255,255,255,0.54);
-  border: 1px solid rgba(0,0,0,0.16);
+  background: rgba(255, 255, 255, 0.54);
+  border: 1px solid rgba(0, 0, 0, 0.16);
 
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 10px;
 }
 
-/* reduce “segmented iOS” feel */
 .navBtn {
   height: 44px;
   border-radius: 12px;
@@ -537,29 +621,35 @@
   place-items: center;
   cursor: pointer;
 
-  border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(255,255,255,0.18);
-  color: rgba(12,12,12,0.62);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(12, 12, 12, 0.62);
 
   transition: transform 120ms ease, background 120ms ease, border 120ms ease;
 }
 
 .navBtn:hover {
   transform: translateY(-1px);
-  background: rgba(255,255,255,0.34);
-  border-color: rgba(0,0,0,0.10);
+  background: rgba(255, 255, 255, 0.34);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
-/* active: ink hairline + subtle fill (not a big pill highlight) */
 .navActive {
-  background: rgba(0,0,0,0.06);
-  border-color: rgba(0,0,0,0.16);
-  color: rgba(12,12,12,0.92);
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.16);
+  color: rgba(12, 12, 12, 0.92);
 }
 
 /* ---------- Small screens ---------- */
 @media (max-width: 360px) {
-  .title { font-size: 30px; }
-  .heroCard { grid-template-columns: 1fr 120px; }
-  .deviceMock { width: 110px; height: 150px; }
+  .pageTitle {
+    font-size: 30px;
+  }
+  .title {
+    font-size: 30px;
+  }
+  .chip {
+    min-width: 78px;
+    height: 62px;
+  }
 }
