@@ -1,26 +1,6 @@
 // frontend/app/user-dashboard/components/TopBar.js
 import styles from "../page.module.css";
 
-function IconMenu(props) {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      {...props}
-    >
-      <path
-        d="M4 7h16M4 12h16M4 17h16"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function IconUser(props) {
   return (
     <svg
@@ -50,25 +30,23 @@ function IconUser(props) {
 export default function TopBar({
   kicker = "",
   title = "",
-  onMenu,
   onSettings,
 }) {
-  const showCenter = Boolean((kicker || "").trim()) || Boolean((title || "").trim());
+  const showCenter =
+    Boolean((kicker || "").trim()) || Boolean((title || "").trim());
 
   return (
     <header className={styles.topBar}>
-      <button
-        className={styles.iconBtn}
-        type="button"
-        aria-label="Open menu"
-        onClick={onMenu}
-      >
-        <IconMenu />
-      </button>
+      {/* left slot intentionally empty (keeps center spacing balanced) */}
+      <div aria-hidden="true" />
 
       <div className={styles.titleWrap} aria-hidden={!showCenter}>
-        {Boolean((kicker || "").trim()) && <div className={styles.kicker}>{kicker}</div>}
-        {Boolean((title || "").trim()) && <div className={styles.title}>{title}</div>}
+        {Boolean((kicker || "").trim()) && (
+          <div className={styles.kicker}>{kicker}</div>
+        )}
+        {Boolean((title || "").trim()) && (
+          <div className={styles.title}>{title}</div>
+        )}
       </div>
 
       <button

@@ -2,42 +2,41 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
 import TopBar from "./components/TopBar";
-
-// layout blocks
-import CategoryChips from "./components/CategoryChips";
 import SectionHeader from "./components/SectionHeader";
 import DeviceGrid from "./components/DeviceGrid";
 
-// icons
+// category bar + sheet
+import CategoryBar from "./components/CategoryBar";
+import CategorySheet from "./components/CategorySheet";
+
+// icons (optional for the sheet chips)
 import { CATEGORY_ICON_MAP } from "./components/icons";
 
 // data (single source of truth)
-import {
-  CATEGORIES as BASE_CATEGORIES,
-  STATUSLINE_DEFAULT,
-} from "./components/dashboardData";
+import { CATEGORIES as BASE_CATEGORIES } from "./components/dashboardData";
 
 /**
  * VTech (Hands-On Assistance) — Home
- * This version shows TECH tiles only (no primary action card).
- * - Header: "Start Remote Help"
- * - Grid: Best Available + 3 tech tiles (2x2)
- * - Auto-filter by active category when possible
+ *
+ * Changes:
+ * - Removed hamburger + "..." action wiring
+ * - Profile icon routes to /settings
+ * - Category matching treats "all" as no filter
  */
 
-// attach icons to category chip items
 const CATEGORIES = (BASE_CATEGORIES || []).map((c) => ({
   ...c,
   icon: CATEGORY_ICON_MAP?.[c.key] || undefined,
 }));
 
-// Temporary local tech pool (so page works even before dashboardData gets TECHS)
+// Temporary local tech pool (works before wiring real TECHS list)
 const TECH_POOL = [
   {
-    key: "best-available", // special tile
+    key: "best-available",
     name: "Best Available",
     specialty: "Auto-assign",
     status: "available",
@@ -50,7 +49,8 @@ const TECH_POOL = [
     specialty: "QSR Ops (Generalist)",
     status: "available",
     etaMin: 6,
-    specialties: ["emergency", "pos", "food", "vending"],
+    specialties: ["pos", "food", "vending", "other"],
+    avatarUrl: "/techs/Maria.jpg",
   },
   {
     key: "chris-pos",
@@ -58,7 +58,8 @@ const TECH_POOL = [
     specialty: "POS / Payments",
     status: "busy",
     etaMin: 12,
-    specialties: ["pos", "payments", "emergency"],
+    specialties: ["pos"],
+    avatarUrl: "/techs/Chris.jpg",
   },
   {
     key: "sam-network",
@@ -66,7 +67,8 @@ const TECH_POOL = [
     specialty: "Network / Wi-Fi",
     status: "available",
     etaMin: 8,
-    specialties: ["pos", "payments", "hvac", "emergency"],
+    specialties: ["pos", "hvac", "other"],
+    avatarUrl: "/techs/Sam.jpg",
   },
   {
     key: "jordan-kds",
@@ -74,7 +76,7 @@ const TECH_POOL = [
     specialty: "Online Orders / KDS",
     status: "away",
     etaMin: 18,
-    specialties: ["pos", "food", "emergency"],
+    specialties: ["pos", "food", "other"],
   },
 ];
 
@@ -89,48 +91,74 @@ function normStatus(s) {
 }
 
 function matchesCategory(tech, activeKey) {
-  if (!activeKey) return true;
-  if (tech.isBest) return true; // best available always shows
+  // "all" (or blank) = no filter
+  if (!activeKey || String(activeKey).toLowerCase() === "all") return true;
+  if (tech.isBest) return true;
 
-  // If your categories are broad (emergency/food/vending/pos/hvac/etc),
-  // we match against tech.specialties if present; otherwise show generalists.
   const list = Array.isArray(tech.specialties) ? tech.specialties : [];
-  if (!list.length) return tech.specialty.toLowerCase().includes("generalist");
+  if (!list.length)
+    return String(tech.specialty || "").toLowerCase().includes("generalist");
 
-  return list.map((x) => String(x).toLowerCase()).includes(String(activeKey).toLowerCase());
+  return list
+    .map((x) => String(x).toLowerCase())
+    .includes(String(activeKey).toLowerCase());
 }
 
 function toTile(tech) {
   const status = normStatus(tech.status);
-  const statusLabel =
-    status === "available" ? "Available" : status === "busy" ? "Busy" : status === "away" ? "Away" : "Offline";
 
   const eta =
     status === "available" && Number.isFinite(tech.etaMin)
       ? ` • ~${Math.max(1, Math.round(tech.etaMin))}m`
       : "";
 
+  const statusText =
+    status === "available"
+      ? ""
+      : status === "busy"
+      ? " • Busy"
+      : status === "away"
+      ? " • Away"
+      : " • Offline";
+
+  const subtitle = tech.isBest
+    ? `${tech.specialty}${eta}`
+    : `${tech.specialty}${statusText}${eta}`;
+
   return {
     key: tech.key,
     title: tech.name,
-    subtitle: `${tech.specialty} • ${statusLabel}${eta}`,
-    // optional fields for later (DeviceGrid can ignore if it wants)
+    sub: subtitle,
+    subtitle,
     status,
     etaMin: tech.etaMin,
     avatarUrl: tech.avatarUrl,
+    isBest: Boolean(tech.isBest),
     raw: tech,
   };
 }
 
 export default function Page() {
-  const [activeCategory, setActiveCategory] = useState(
-    BASE_CATEGORIES?.[0]?.key || "emergency"
-  );
+  const router = useRouter();
+
+  // Default to "all" if available, otherwise first category, otherwise "all"
+  const defaultKey =
+    (BASE_CATEGORIES || []).find((c) => String(c?.key).toLowerCase() === "all")
+      ?.key ||
+    BASE_CATEGORIES?.[0]?.key ||
+    "all";
+
+  const [activeCategory, setActiveCategory] = useState(defaultKey);
+  const [catOpen, setCatOpen] = useState(false);
+
+  const activeLabel =
+    (CATEGORIES || []).find((c) => c.key === activeCategory)?.label || "All";
 
   const sectionTitle = "Start Remote Help";
 
-  const TECH_TILES = useMemo(() => {
-    const best = TECH_POOL.find((t) => t.key === "best-available") || TECH_POOL[0];
+  const { TECH_TILES, statusLine } = useMemo(() => {
+    const best =
+      TECH_POOL.find((t) => t.key === "best-available") || TECH_POOL[0];
 
     const filtered = TECH_POOL
       .filter((t) => t.key !== "best-available")
@@ -149,22 +177,27 @@ export default function Page() {
       })
       .slice(0, 3);
 
-    // 2x2 grid: Best Available + 3 techs
-    return [toTile(best), ...sorted.map(toTile)];
+    const tiles = [toTile(best), ...sorted.map(toTile)];
+
+    const onlineCount = TECH_POOL.filter((t) => {
+      const s = normStatus(t.status);
+      return s === "available" || s === "busy" || s === "away";
+    }).length;
+
+    const line = `${onlineCount} online • Avg response 8m`;
+
+    return { TECH_TILES: tiles, statusLine: line };
   }, [activeCategory]);
 
   return (
     <main className={styles.root}>
       <div className={styles.shell}>
-        {/* Top bar (thin utility row) */}
         <TopBar
           kicker=""
           title=""
-          onMenu={() => console.log("menu")}
-          onSettings={() => console.log("profile/settings")}
+          onSettings={() => router.push("/settings")}
         />
 
-        {/* Greeting block */}
         <div className={styles.sublineWrap}>
           <div className={styles.pageTitle}>Hi Javi</div>
           <div className={styles.helperText}>
@@ -172,24 +205,31 @@ export default function Page() {
           </div>
         </div>
 
-        {/* Equipment categories */}
-        <CategoryChips
-          items={CATEGORIES}
-          activeKey={activeCategory}
-          onChange={setActiveCategory}
+        <CategoryBar
+          label="Category"
+          value={activeLabel}
+          onOpen={() => setCatOpen(true)}
         />
 
-        {/* Start Remote Help header + TECH tiles */}
-        <SectionHeader
-          title={sectionTitle}
-          onMore={() => console.log("view all techs")}
-          moreLabel="View all techs"
+        <CategorySheet
+          open={catOpen}
+          title="Choose equipment type"
+          items={CATEGORIES}
+          activeKey={activeCategory}
+          onSelect={(key) => {
+            setActiveCategory(key);
+            setCatOpen(false);
+          }}
+          onClose={() => setCatOpen(false)}
         />
+
+        <SectionHeader title={sectionTitle} />
 
         <DeviceGrid
           items={TECH_TILES}
           onOpen={(itemOrKey) => {
-            const key = typeof itemOrKey === "string" ? itemOrKey : itemOrKey?.key;
+            const key =
+              typeof itemOrKey === "string" ? itemOrKey : itemOrKey?.key;
 
             if (key === "best-available") {
               console.log("start help: auto-assign", "category:", activeCategory);
@@ -201,12 +241,9 @@ export default function Page() {
           ariaLabel="Start remote help with a tech"
         />
 
-        {/* Optional status line */}
-        {Boolean(STATUSLINE_DEFAULT) && (
-          <div className={styles.helperText} style={{ marginTop: 6 }}>
-            {STATUSLINE_DEFAULT}
-          </div>
-        )}
+        <div className={styles.helperText} style={{ marginTop: 6 }}>
+          {statusLine}
+        </div>
       </div>
     </main>
   );

@@ -3,7 +3,7 @@
 // Focus: route by equipment type + start help fast via tech tiles.
 
 export const CATEGORIES = [
-  { key: "emergency", label: "Emergency" },
+  { key: "all", label: "All" },
   { key: "food", label: "Food Equipment" },
   { key: "vending", label: "Vending / Soda" },
   { key: "pos", label: "POS / Payments" },
@@ -33,7 +33,7 @@ export const TECHS = [
     specialty: "Auto-assign",
     status: "available",
     etaMin: 3,
-    specialties: ["emergency", "food", "vending", "pos", "hvac", "electrical", "other"],
+    specialties: ["food", "vending", "pos", "hvac", "electrical", "other"],
     avatarUrl: "", // optional
     isBest: true,
   },
@@ -45,7 +45,7 @@ export const TECHS = [
     specialty: "QSR Ops (Generalist)",
     status: "available",
     etaMin: 6,
-    specialties: ["emergency", "food", "vending", "pos", "other"],
+    specialties: ["food", "vending", "pos", "other"],
     avatarUrl: "",
   },
   {
@@ -54,7 +54,7 @@ export const TECHS = [
     specialty: "QSR Ops (Generalist)",
     status: "busy",
     etaMin: 12,
-    specialties: ["emergency", "food", "pos", "other"],
+    specialties: ["food", "pos", "other"],
     avatarUrl: "",
   },
 
@@ -65,7 +65,7 @@ export const TECHS = [
     specialty: "POS / Payments",
     status: "available",
     etaMin: 8,
-    specialties: ["pos", "emergency"],
+    specialties: ["pos"],
     avatarUrl: "",
   },
   {
@@ -74,7 +74,7 @@ export const TECHS = [
     specialty: "Network / Wi-Fi",
     status: "away",
     etaMin: 18,
-    specialties: ["pos", "emergency", "other"],
+    specialties: ["pos", "other"],
     avatarUrl: "",
   },
   {
@@ -83,7 +83,7 @@ export const TECHS = [
     specialty: "Online Orders / KDS",
     status: "available",
     etaMin: 10,
-    specialties: ["food", "pos", "emergency", "other"],
+    specialties: ["food", "pos", "other"],
     avatarUrl: "",
   },
 
@@ -94,7 +94,7 @@ export const TECHS = [
     specialty: "Beverage / Fountain (Triage)",
     status: "offline",
     etaMin: null,
-    specialties: ["vending", "food", "emergency"],
+    specialties: ["vending", "food"],
     avatarUrl: "",
   },
 ];

@@ -23,27 +23,29 @@ function Base({ children, size = 18, ...props }) {
 
 /* ---------- Category icons (hands-on assistance) ---------- */
 
-export function IconEmergency(props) {
+export function IconAll(props) {
   return (
     <Base {...props}>
-      {/* alert triangle */}
+      {/* stacked layers (all) */}
       <path
-        d="M12 4.2 21 20H3L12 4.2Z"
+        d="M12 5.2 20 9l-8 3.8L4 9l8-3.8Z"
         stroke="currentColor"
         strokeWidth={STROKE}
         strokeLinejoin="round"
       />
       <path
-        d="M12 9v5"
+        d="M4.6 12.1 12 15.6l7.4-3.5"
         stroke="currentColor"
         strokeWidth={STROKE}
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
-        d="M12 17.2h0"
+        d="M4.6 15.3 12 18.8l7.4-3.5"
         stroke="currentColor"
-        strokeWidth={STROKE + 1.6}
+        strokeWidth={STROKE}
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Base>
   );
@@ -328,7 +330,7 @@ export function IconEquipment(props) {
 /* ---------- Convenience maps (used by page.js) ---------- */
 
 export const CATEGORY_ICON_MAP = {
-  emergency: IconEmergency,
+  all: IconAll,
   food: IconFood,
   vending: IconVending,
   pos: IconPOS,
