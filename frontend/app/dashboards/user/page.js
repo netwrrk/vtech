@@ -17,7 +17,7 @@ import CategorySheet from "./components/CategorySheet";
 import { CATEGORY_ICON_MAP } from "./components/icons";
 
 // data (single source of truth)
-import { CATEGORIES as BASE_CATEGORIES } from "./components/dashboardData";
+import { CATEGORIES as BASE_CATEGORIES } from "./data/dashboardData";
 
 /**
  * VTech (Hands-On Assistance) — Home
