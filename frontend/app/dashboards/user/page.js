@@ -236,7 +236,7 @@ export default function Page() {
               return;
             }
 
-            console.log("open tech", key, "category:", activeCategory);
+            router.push("/dashboards/user/web_rtc_call/demo");
           }}
           ariaLabel="Start remote help with a tech"
         />
