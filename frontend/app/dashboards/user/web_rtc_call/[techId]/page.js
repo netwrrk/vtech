@@ -94,6 +94,11 @@ export default function WebRtcCallUserPage() {
         pc.onconnectionstatechange = () => {
           setStatus(`pc-${pc.connectionState}`);
         };
+        // connecting =ICE checks in progress
+        // connected = media flowing
+        // disconnected = temporary network issue
+        // failed = ICE failed, no path worked 
+        // closed = closed
 
         // 3) WebSocket signaling
         setStatus("connecting-ws");
