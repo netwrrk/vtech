@@ -1,79 +1,12 @@
-Short answer: **no — don’t separate it.**
-Long answer (why this is *correct* in Next.js):
+**VTech aesthetic (for devs/engineers): “Editorial Liminal / Lab UI”**
 
-### Why `page.js` has “HTML”
-
-In **Next.js (App Router)**, `page.js` **is the page**.
-The JSX you’re seeing *looks* like HTML, but it’s **React JSX**, not a static `.html` file.
-
-This is the intended architecture:
-
-```
-/app
-  /sign-in
-    page.js          ← page + markup + logic
-    page.module.css  ← styles
-```
-
-Separating it into a `.html` file would:
-
-* ❌ break React state (`useState`)
-* ❌ break client-side routing
-* ❌ break form handlers (`onSubmit`)
-* ❌ go against how Next renders pages (SSR / RSC)
-
-So what you’re seeing is **exactly how it should be**.
-
----
-
-### When *would* you separate things?
-
-Not into `.html`, but into **components**.
-
-Example (optional, later):
-
-```
-/sign-in
-  page.js
-  SignInForm.jsx
-  page.module.css
-```
-
-Then `page.js` becomes:
-
-```js
-import SignInForm from "./SignInForm";
-
-export default function Page() {
-  return <SignInForm />;
-}
-```
-
-That’s the *correct* way to “separate” — **not HTML files**.
-
----
-
-### Why you still have `sign-in.html`
-
-That file is a leftover from a static-HTML mindset. In Next:
-
-* `.html` files are ignored by the App Router
-* they’re safe to delete
-
-You can remove:
-
-* `sign-in.html`
-* `sign-in.js` (if it’s old vanilla JS)
-
-They’re doing nothing now.
-
----
-
-### Bottom line
-
-* ✅ JSX in `page.js` is correct and expected
-* ❌ Don’t split into `.html`
-* ✅ Split into React components *if* it gets big
-* 🧹 You can delete old static files
-
-You’re now using **real Next.js architecture**, not a hack.
+* **Base tone:** gallery-grey / paper background, not neon, not cyberpunk, not glossy dark mode.
+* **Contrast:** “ink on paper” — deep charcoal text/icons on soft ash surfaces.
+* **Structure:** **thin hairline dividers** and clean geometry > heavy shadows or glows.
+* **Surfaces:** flat “paper panels” with slight tonal separation (subtle fills), minimal depth.
+* **Radii:** restrained and consistent (sharper corners, not bubbly iOS pills).
+* **Typography:** tight, modern editorial (kicker labels with tracking + bold headlines).
+* **Effects:** soft fog/bloom + light grain is okay; **no strong gradients, no glow blobs**.
+* **States:** active/selected is minimal (underline/dot/bar), not big highlighted pills.
+* **Icons:** consistent stroke/size; simple, technical, calm.
+* **Overall vibe:** premium, quiet, “lab instrument UI” — confident and readable, not loud.

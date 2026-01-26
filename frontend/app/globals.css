@@ -1,5 +1,5 @@
 /* =========================================================
-   VTech — Global (Liminal Systems)
+   VTech — Global (Liminal Systems) — Phase 1 (Light Ash / Editorial)
    Globals only: resets, tokens, NO layout framing
 ========================================================= */
 
@@ -22,6 +22,7 @@ body {
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
 
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
     Arial, "Apple Color Emoji", "Segoe UI Emoji";
@@ -30,32 +31,104 @@ body {
      Do NOT impose a background here.
      Pages (like sign-in) fully own their background. */
   background: transparent;
-  color: var(--white-idle);
+  color: var(--text-idle);
+}
+
+/* media defaults */
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* focus: controlled, quiet (ink hairline) */
+:focus-visible {
+  outline: 2px solid rgba(0, 0, 0, 0.22);
+  outline-offset: 2px;
+}
+
+/* selection: subtle (paper/ink) */
+::selection {
+  background: rgba(0, 0, 0, 0.10);
+  color: rgba(12, 12, 12, 0.92);
 }
 
 /* ---------- tokens ---------- */
 :root {
-  /* ---------- Active ---------- */
-  --green-core: #099247;
-  --green-soft: rgba(12, 156, 72, 0.45);
-  --green-glow: rgba(12, 156, 72, 0.16);
+  /* ====== core liminal palette (EDITORIAL LIGHT) ====== */
+  --paper: #d7d6d2;         /* gallery grey base */
+  --paper-2: #e3e2de;       /* lighter lift */
+  --ink: rgba(12, 12, 12, 0.92);
+  --ink-2: rgba(12, 12, 12, 0.72);
+  --ink-3: rgba(12, 12, 12, 0.56);
 
-  /* ---------- Error ---------- */
-  --error-core: #8b1e1e;
-  --error-soft: rgba(139, 30, 30, 0.45);
+  /* keep these names for compatibility, but shift meaning */
+  --void: var(--paper);
+  --void-2: var(--paper-2);
 
-  /* ---------- Typography ---------- */
-  --white-core: rgba(255, 255, 255, 0.96);
-  --white-idle: rgba(235, 238, 240, 0.78);
-  --white-dim: rgba(235, 238, 240, 0.46);
+  --ash: rgba(0, 0, 0, 0.08);
+  --ash-2: rgba(0, 0, 0, 0.05);
 
-  /* ---------- Surfaces (used by internal dashboards only) ---------- */
-  --page-bg: #0b0e0f;
-  --panel-bg: rgba(18, 21, 23, 0.92);
-  --panel-soft: rgba(22, 26, 28, 0.92);
-  --panel-deep: rgba(10, 12, 13, 0.96);
+  --bone: rgba(12, 12, 12, 0.92);
+  --bone-dim: rgba(12, 12, 12, 0.60);
+  --bone-faint: rgba(12, 12, 12, 0.46);
 
-  --edge-light: rgba(255, 255, 255, 0.06);
+  /* typography */
+  --text-core: rgba(12, 12, 12, 0.92);
+  --text-idle: rgba(12, 12, 12, 0.76);
+  --text-dim: rgba(12, 12, 12, 0.50);
+
+  /* edges / hairlines (ink structure) */
+  --hairline: rgba(0, 0, 0, 0.14);
+  --hairline-strong: rgba(0, 0, 0, 0.18);
+  --edge-light: rgba(0, 0, 0, 0.08);
+
+  /* surfaces (paper panels) */
+  --page-bg: var(--paper); /* legacy token now maps to paper */
+  --surface-1: rgba(255, 255, 255, 0.42);
+  --surface-2: rgba(255, 255, 255, 0.50);
+  --surface-3: rgba(255, 255, 255, 0.58);
+  --surface-4: rgba(255, 255, 255, 0.66);
+
+  /* depth (controlled, no glow) */
+  --shadow-1: 0 10px 24px rgba(0, 0, 0, 0.12);
+  --shadow-2: 0 18px 34px rgba(0, 0, 0, 0.14);
+  --shadow-3: 0 22px 40px rgba(0, 0, 0, 0.16);
+
+  /* radii scale (phase 1: reduced + consistent) */
+  --r-xs: 10px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 18px;
+  --r-xl: 22px;
+
+  /* ---------- status (minimal, editorial) ---------- */
+  --green-core: #0a7a3a;
+  --green-soft: rgba(10, 122, 58, 0.18);
+  --green-glow: rgba(10, 122, 58, 0.06);
+
+  --error-core: #7a1b1b;
+  --error-soft: rgba(122, 27, 27, 0.18);
+
+  /* compatibility aliases (older code may reference these) */
+  --white-core: rgba(12, 12, 12, 0.92);
+  --white-idle: rgba(12, 12, 12, 0.76);
+  --white-dim: rgba(12, 12, 12, 0.50);
+
+  /* legacy panel tokens mapped to paper panels */
+  --panel-bg: rgba(255, 255, 255, 0.58);
+  --panel-soft: rgba(255, 255, 255, 0.50);
+  --panel-deep: rgba(255, 255, 255, 0.42);
 }
 
 /* ---------- app shell (neutral by default) ---------- */
