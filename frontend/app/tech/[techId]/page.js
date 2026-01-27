@@ -7,6 +7,16 @@ import styles from "./page.module.css";
 
 import { getTechById, normStatus, statusLabel } from "../techData";
 
+function makeSessionCodeFromTechName(name) {
+  // "Maria" -> "maria"
+  // "Sam Network" -> "sam-network"
+  // You said "tech's name as the code" — this keeps it URL/WS friendly.
+  return String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+}
+
 export default function TechContactPage() {
   const router = useRouter();
   const params = useParams();
@@ -15,7 +25,6 @@ export default function TechContactPage() {
   const tech = useMemo(() => getTechById(techId), [techId]);
 
   function goBack() {
-    // back first (feels native), fallback to dashboard
     if (typeof window !== "undefined" && window.history.length > 1) router.back();
     else router.push("/dashboards/user");
   }
@@ -24,7 +33,6 @@ export default function TechContactPage() {
     router.push("/dashboards/user");
   }
 
-  // ✅ Option A: render a Not Found UI instead of routing to /tech/not-found
   if (!tech) {
     return (
       <main className={styles.root}>
@@ -65,14 +73,14 @@ export default function TechContactPage() {
       ? `~${Math.max(1, Math.round(tech.etaMin))}m`
       : null;
 
-  const canStartSession = s === "available"; // simple rule for now
+  const canStartSession = s === "available";
 
   function openChat() {
     router.push(`/sessions?tech=${encodeURIComponent(tech.id)}&mode=chat`);
   }
 
   function startSession() {
-    router.push(`/sessions?tech=${encodeURIComponent(tech.id)}&mode=video`);
+    router.push("/dashboards/user/web_rtc_call/demo");
   }
 
   return (
@@ -88,18 +96,11 @@ export default function TechContactPage() {
 
         <section className={styles.contactCard}>
           <div className={styles.avatarWrap}>
-            {/* If avatar missing, CSS will still keep the circle */}
             {tech.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img
-                className={styles.avatar}
-                src={tech.avatarUrl}
-                alt={tech.name}
-              />
+              <img className={styles.avatar} src={tech.avatarUrl} alt={tech.name} />
             ) : (
-              <div className={styles.avatarFallback}>
-                {tech.name?.[0] || "T"}
-              </div>
+              <div className={styles.avatarFallback}>{tech.name?.[0] || "T"}</div>
             )}
           </div>
 
@@ -130,11 +131,7 @@ export default function TechContactPage() {
               className={styles.btnSecondary}
               onClick={startSession}
               disabled={!canStartSession}
-              title={
-                !canStartSession
-                  ? "Tech not available right now"
-                  : "Start virtual session"
-              }
+              title={!canStartSession ? "Tech not available right now" : "Start virtual session"}
             >
               Start Virtual Session
             </button>

@@ -72,7 +72,6 @@ sessions.set("demo", {
   tech: null,
   createdAt: Date.now(),
 });
-console.log("demo preset?", sessions.has("demo"));
 
 function send(ws, obj) {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
