@@ -26,6 +26,9 @@ import { CATEGORIES as BASE_CATEGORIES } from "./data/dashboardData";
  * - Removed hamburger + "..." action wiring
  * - Profile icon routes to /settings
  * - Category matching treats "all" as no filter
+ *
+ * NEW:
+ * - Clicking a tech (not Best Available) routes to /tech/[techId]
  */
 
 const CATEGORIES = (BASE_CATEGORIES || []).map((c) => ({
@@ -192,11 +195,7 @@ export default function Page() {
   return (
     <main className={styles.root}>
       <div className={styles.shell}>
-        <TopBar
-          kicker=""
-          title=""
-          onSettings={() => router.push("/settings")}
-        />
+        <TopBar kicker="" title="" onSettings={() => router.push("/settings")} />
 
         <div className={styles.sublineWrap}>
           <div className={styles.pageTitle}>Hi Javi</div>
@@ -231,12 +230,19 @@ export default function Page() {
             const key =
               typeof itemOrKey === "string" ? itemOrKey : itemOrKey?.key;
 
+            if (!key) return;
+
             if (key === "best-available") {
-              console.log("start help: auto-assign", "category:", activeCategory);
+              console.log(
+                "start help: auto-assign",
+                "category:",
+                activeCategory
+              );
               return;
             }
 
-            router.push("/dashboards/user/web_rtc_call/demo");
+            // NEW: open tech contact page
+            router.push(`/tech/${encodeURIComponent(key)}`);
           }}
           ariaLabel="Start remote help with a tech"
         />
