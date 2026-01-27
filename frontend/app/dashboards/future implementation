@@ -1,0 +1,11 @@
+In terms of WebRTC:
+
+Add tracks for audio/visual for the tech side
+Implement TURN Server
+Creating randomly generated sessionID code
+Disconnect handling
+Add authentication to make sure no third party can join the call
+Enforce 1 tech and 1 user per session
+Make the gui more user friendly
+Default screen if the video is off
+Add audio on/off options, video on/off options (gui)
