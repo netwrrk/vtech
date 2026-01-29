@@ -79,9 +79,17 @@ export default function TechContactPage() {
     router.push(`/sessions?tech=${encodeURIComponent(tech.id)}&mode=chat`);
   }
 
-  function startSession() {
-    router.push("/dashboards/user/web_rtc_call/demo");
+  function makeRoomCode7() {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let out = "";
+    for (let i = 0; i < 7; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+    return out;
   }
+
+  function startSession() {
+    const room = makeRoomCode7();
+    router.push(`/dashboards/user/web_rtc_call/${encodeURIComponent(techId)}?session=${room}`);
+  } 
 
   return (
     <main className={styles.root}>

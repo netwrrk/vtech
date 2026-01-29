@@ -35,7 +35,8 @@ const HelloMsg = BaseMsg.extend({
 });
 
 const CreateSessionMsg = BaseMsg.extend({
-  type: z.literal("create_session")
+  type: z.literal("create_session"),
+  sessionId: z.string().optional()
 });
 
 const JoinSessionMsg = BaseMsg.extend({
@@ -64,14 +65,6 @@ const AnyMsg = z.union([
   SignalMsg,
   EndSessionMsg
 ]);
-
-sessions.set("demo", {
-  sessionId: "demo",
-  status: "waiting",
-  user: null,
-  tech: null,
-  createdAt: Date.now(),
-});
 
 function send(ws, obj) {
   if (ws.readyState === ws.OPEN) ws.send(JSON.stringify(obj));
@@ -127,7 +120,44 @@ wss.on("connection", (ws) => {
     }
 
     if (msg.type === "create_session") {
-      const sessionId = nanoid(8);
+      const requested = (msg.sessionId || "").trim();
+
+      // If client requests a specific id, enforce 7 chars A-Z0-9
+      if (requested) {
+        const ok = /^[A-Z0-9]{7}$/.test(requested);
+        if (!ok) {
+          return send(ws, {
+            type: "error",
+            code: "BAD_SESSION_ID",
+            message: "sessionId must be 7 chars (A-Z, 0-9)."
+          });
+        }
+
+        if (sessions.has(requested)) {
+          return send(ws, {
+            type: "error",
+            code: "SESSION_TAKEN",
+            message: "Session already exists."
+          });
+        }
+
+        sessions.set(requested, {
+          sessionId: requested,
+          status: "waiting",
+          user: null,
+          tech: null,
+          createdAt: Date.now()
+        });
+
+        return send(ws, { type: "session_created", sessionId: requested });
+      }
+
+      // Otherwise server generates one (still collision-safe)
+      let sessionId;
+      do {
+        sessionId = nanoid(8);
+      } while (sessions.has(sessionId));
+
       sessions.set(sessionId, {
         sessionId,
         status: "waiting",
@@ -138,6 +168,7 @@ wss.on("connection", (ws) => {
 
       return send(ws, { type: "session_created", sessionId });
     }
+
 
     if (msg.type === "join_session") {
       const session = sessions.get(msg.sessionId);

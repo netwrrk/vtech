@@ -1,12 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 const WS_URL = process.env.NEXT_PUBLIC_BACKEND_WS;
 
+function makeRoomCode7() {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let out = "";
+  for (let i = 0; i < 7; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+  return out;
+}
+
 export default function WebRtcCallUserPage() {
-  const SESSION_ID = "demo";
   const role = "user";
+
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
+
+  const techId = params?.techId;
+
+  // Pull session from query: ?session=XXXXXXX
+  const sessionFromUrl = (searchParams.get("session") || "").trim();
+
+  const [sessionId, setSessionId] = useState(sessionFromUrl);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -18,7 +36,27 @@ export default function WebRtcCallUserPage() {
   const [status, setStatus] = useState("init");
   const [error, setError] = useState("");
 
+  // Ensure we always have a session in the URL (Option A)
   useEffect(() => {
+    if (sessionFromUrl && sessionFromUrl !== sessionId) {
+      setSessionId(sessionFromUrl);
+      return;
+    }
+
+    if (!sessionFromUrl) {
+      const fresh = makeRoomCode7();
+      router.replace(
+        `/dashboards/user/web_rtc_call/${encodeURIComponent(techId)}?session=${fresh}`
+      );
+    }
+  }, [sessionFromUrl, sessionId, router, techId]);
+
+  useEffect(() => {
+    // Don't start until we have a valid sessionId from the URL
+    if (!sessionId) return;
+
+    const SESSION_ID = sessionId;
+
     let cancelled = false;
     let offerSent = false;
     let pendingIce = []; // candidates that arrive before remoteDescription
@@ -49,9 +87,10 @@ export default function WebRtcCallUserPage() {
 
     async function start() {
       try {
+        setError("");
         setStatus("starting");
 
-        // 1) Media (user should have camera; if not, show clear error)
+        // 1) Media
         setStatus("getting-media");
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -94,11 +133,6 @@ export default function WebRtcCallUserPage() {
         pc.onconnectionstatechange = () => {
           setStatus(`pc-${pc.connectionState}`);
         };
-        // connecting =ICE checks in progress
-        // connected = media flowing
-        // disconnected = temporary network issue
-        // failed = ICE failed, no path worked 
-        // closed = closed
 
         // 3) WebSocket signaling
         setStatus("connecting-ws");
@@ -107,15 +141,15 @@ export default function WebRtcCallUserPage() {
 
         ws.onopen = () => {
           setStatus("ws-open");
-          console.log("WS OUT: hello/join_session sent");
+          console.log("WS OUT: hello/create_session sent");
 
           ws.send(JSON.stringify({ type: "hello", role }));
 
+          // Create session first (collision-safe on backend)
           ws.send(
             JSON.stringify({
-              type: "join_session",
+              type: "create_session",
               sessionId: SESSION_ID,
-              role,
             })
           );
         };
@@ -124,10 +158,32 @@ export default function WebRtcCallUserPage() {
           const data = JSON.parse(msg.data);
           console.log("WS IN:", data);
 
-          // Surface backend errors clearly
+          // Handle collision specifically (you said YES to prevention)
+          if (data.type === "error" && data.code === "SESSION_TAKEN") {
+            const fresh = makeRoomCode7();
+            router.replace(
+              `/dashboards/user/web_rtc_call/${encodeURIComponent(techId)}?session=${fresh}`
+            );
+            return;
+          }
+
+          // Other errors
           if (data.type === "error") {
             setError(`${data.code || "ERROR"}: ${data.message || ""}`);
             setStatus("error");
+            return;
+          }
+
+          // After creating the session, join it
+          if (data.type === "session_created" && data.sessionId === SESSION_ID) {
+            console.log("WS OUT: join_session sent");
+            ws.send(
+              JSON.stringify({
+                type: "join_session",
+                sessionId: SESSION_ID,
+                role,
+              })
+            );
             return;
           }
 
@@ -174,7 +230,6 @@ export default function WebRtcCallUserPage() {
             }
 
             if (data.signalType === "ice" && data.payload) {
-              // If remoteDescription not set yet, queue it
               if (!pc.remoteDescription) {
                 pendingIce.push(data.payload);
                 return;
@@ -186,7 +241,6 @@ export default function WebRtcCallUserPage() {
             }
 
             if (data.signalType === "offer") {
-              // Not expected (user is caller), but safe fallback
               setStatus("received-offer");
               await pc.setRemoteDescription(data.payload);
               const answer = await pc.createAnswer();
@@ -237,7 +291,7 @@ export default function WebRtcCallUserPage() {
         localStreamRef.current?.getTracks()?.forEach((t) => t.stop());
       } catch {}
     };
-  }, []);
+  }, [sessionId, router, techId]); // <-- reruns cleanly when we regenerate session
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 12 }}>
@@ -270,7 +324,7 @@ export default function WebRtcCallUserPage() {
 
       <div style={{ fontSize: 12, opacity: 0.85 }}>
         <div>role: {role}</div>
-        <div>session: {SESSION_ID}</div>
+        <div>session: {sessionId}</div>
         <div>status: {status}</div>
         {error ? (
           <div style={{ marginTop: 8, color: "crimson" }}>{error}</div>
