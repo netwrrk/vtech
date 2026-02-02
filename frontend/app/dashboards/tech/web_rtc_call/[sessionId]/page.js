@@ -1,11 +1,25 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 const WS_URL = process.env.NEXT_PUBLIC_BACKEND_WS;
 
+function getTechIdFromUrlOrStorage() {
+  if (typeof window === "undefined") return "";
+  const qs = new URLSearchParams(window.location.search);
+  const fromQS = String(qs.get("techId") || "").trim().toLowerCase();
+  const fromLS = String(localStorage.getItem("vtech.techId") || "")
+    .trim()
+    .toLowerCase();
+  return fromQS || fromLS || "";
+}
+
 export default function WebRtcCallTechPage() {
-  const SESSION_ID = "demo";
+  const router = useRouter();
+  const params = useParams();
+
+  const SESSION_ID = String(params?.sessionId || "").trim();
   const role = "tech";
 
   const localVideoRef = useRef(null); // unused for now (receive-only)
@@ -18,26 +32,72 @@ export default function WebRtcCallTechPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    let cancelled = false;
-    let pendingIce = []; // candidates that arrive before remoteDescription
+    if (!SESSION_ID) {
+      setStatus("missing-session");
+      setError("Missing sessionId in the URL.");
+      return;
+    }
+    if (!WS_URL) {
+      setStatus("missing-ws-url");
+      setError("Missing NEXT_PUBLIC_BACKEND_WS.");
+      return;
+    }
+
+    const TECH_ID = getTechIdFromUrlOrStorage();
+
+    if (!TECH_ID) {
+      setStatus("missing-techId");
+      setError(
+        "Missing techId. Add ?techId=maria-qsr to the URL or register once on Tech Dashboard so it saves to localStorage."
+      );
+      return;
+    }
+
+    let pendingIce = [];
+
+    const safeParse = (s) => {
+      try {
+        return JSON.parse(s);
+      } catch {
+        return null;
+      }
+    };
+
+    const wsSend = (obj) => {
+      const ws = wsRef.current;
+      if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+      ws.send(JSON.stringify(obj));
+      return true;
+    };
+
+    async function flushPendingIce(pc) {
+      if (!pendingIce.length) return;
+      const batch = pendingIce;
+      pendingIce = [];
+      for (const iceInit of batch) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(iceInit));
+        } catch (e) {
+          console.warn("addIceCandidate failed:", e);
+        }
+      }
+    }
 
     async function start() {
       try {
         setStatus("starting");
 
-        // ✅ TECH = receive-only for now (no getUserMedia).
+        // ✅ TECH = receive-only for now
         const pc = new RTCPeerConnection({
           iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
         });
         pcRef.current = pc;
 
-        // (Optional but helpful for receive-only)
         pc.addTransceiver("video", { direction: "recvonly" });
         pc.addTransceiver("audio", { direction: "recvonly" });
 
         pc.ontrack = (ev) => {
           const [remoteStream] = ev.streams;
-          console.log("TRACK:", ev.track.kind, ev.streams?.[0]);
           if (remoteVideoRef.current && remoteStream) {
             remoteVideoRef.current.srcObject = remoteStream;
           }
@@ -45,16 +105,16 @@ export default function WebRtcCallTechPage() {
 
         pc.onicecandidate = (ev) => {
           if (!ev.candidate) return;
-          if (wsRef.current?.readyState !== WebSocket.OPEN) return;
 
-          wsRef.current.send(
-            JSON.stringify({
-              type: "signal",
-              sessionId: SESSION_ID,
-              signalType: "ice",
-              payload: ev.candidate,
-            })
-          );
+          // ✅ IMPORTANT: serialize ICE properly
+          const payload = ev.candidate.toJSON ? ev.candidate.toJSON() : ev.candidate;
+
+          wsSend({
+            type: "signal",
+            sessionId: SESSION_ID,
+            signalType: "ice",
+            payload,
+          });
         };
 
         pc.onconnectionstatechange = () => {
@@ -67,26 +127,43 @@ export default function WebRtcCallTechPage() {
 
         ws.onopen = () => {
           setStatus("ws-open");
-          console.log("WS OUT: hello/join_session sent");
 
-          ws.send(JSON.stringify({ type: "hello", role }));
+          // 1) Identify role
+          wsSend({ type: "hello", role });
 
-          ws.send(
-            JSON.stringify({
-              type: "join_session",
-              sessionId: SESSION_ID,
-              role,
-            })
-          );
+          // 2) ✅ Register presence on THIS WS connection (required by backend)
+          wsSend({ type: "register_tech", techId: TECH_ID });
+
+          // NOTE: join_session will be sent after register_tech_ack
         };
 
         ws.onmessage = async (msg) => {
-          const data = JSON.parse(msg.data);
-          console.log("WS IN:", data);
+          const data = safeParse(msg.data);
+          if (!data) return;
 
+          // errors
           if (data.type === "error") {
             setError(`${data.code || "ERROR"}: ${data.message || ""}`);
             setStatus("error");
+            return;
+          }
+
+          // 3) ✅ Wait for ack before joining assigned session
+          if (data.type === "register_tech_ack") {
+            // keep techId sticky for future call pages
+            try {
+              localStorage.setItem("vtech.techId", String(data.techId || TECH_ID));
+            } catch {}
+
+            setStatus("presence-registered");
+
+            wsSend({
+              type: "join_session",
+              sessionId: SESSION_ID,
+              role,
+            });
+
+            setStatus("joining-session");
             return;
           }
 
@@ -105,59 +182,50 @@ export default function WebRtcCallTechPage() {
               setStatus("received-offer");
 
               await pc.setRemoteDescription(data.payload);
-
-              // flush any ICE that arrived early
-              if (pendingIce.length) {
-                const toAdd = pendingIce;
-                pendingIce = [];
-                for (const c of toAdd) {
-                  try {
-                    await pc.addIceCandidate(c);
-                  } catch {}
-                }
-              }
+              await flushPendingIce(pc);
 
               const answer = await pc.createAnswer();
               await pc.setLocalDescription(answer);
 
-              ws.send(
-                JSON.stringify({
-                  type: "signal",
-                  sessionId: SESSION_ID,
-                  signalType: "answer",
-                  payload: answer,
-                })
-              );
+              wsSend({
+                type: "signal",
+                sessionId: SESSION_ID,
+                signalType: "answer",
+                payload: answer,
+              });
 
               setStatus("sent-answer");
               return;
             }
 
             if (data.signalType === "ice" && data.payload) {
-              // If offer hasn't been set yet, queue it
               if (!pc.remoteDescription) {
                 pendingIce.push(data.payload);
                 return;
               }
               try {
-                await pc.addIceCandidate(data.payload);
-              } catch {}
+                await pc.addIceCandidate(new RTCIceCandidate(data.payload));
+              } catch (e) {
+                console.warn("addIceCandidate failed:", e);
+              }
               return;
             }
 
             if (data.signalType === "answer") {
-              // Not expected for tech in this flow, but harmless
+              // not expected for tech in this flow, but harmless
               setStatus("received-answer");
               await pc.setRemoteDescription(data.payload);
               return;
             }
           }
+
+          if (data.type === "session_ended" && data.sessionId === SESSION_ID) {
+            setStatus("session-ended");
+          }
         };
 
         ws.onerror = () => {
-          setError(
-            "WebSocket error. Check NEXT_PUBLIC_BACKEND_WS and Codespaces port 8080 visibility."
-          );
+          setError("WebSocket error. Check NEXT_PUBLIC_BACKEND_WS + port visibility.");
           setStatus("ws-error");
         };
 
@@ -173,7 +241,6 @@ export default function WebRtcCallTechPage() {
     start();
 
     return () => {
-      cancelled = true;
       try {
         wsRef.current?.close();
       } catch {}
@@ -181,7 +248,7 @@ export default function WebRtcCallTechPage() {
         pcRef.current?.close();
       } catch {}
     };
-  }, []);
+  }, [SESSION_ID]);
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 12 }}>
@@ -217,12 +284,26 @@ export default function WebRtcCallTechPage() {
       </div>
 
       <div style={{ fontSize: 12, opacity: 0.85 }}>
-        <div>role: {role}</div>
-        <div>session: {SESSION_ID}</div>
-        <div>status: {status}</div>
-        {error ? (
-          <div style={{ marginTop: 8, color: "crimson" }}>{error}</div>
-        ) : null}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div>role: tech</div>
+          <div>session: {SESSION_ID || "—"}</div>
+          <div>status: {status}</div>
+          <button
+            onClick={() => router.back()}
+            style={{
+              marginLeft: "auto",
+              padding: "6px 10px",
+              borderRadius: 10,
+              border: "1px solid rgba(0,0,0,0.12)",
+              background: "white",
+              cursor: "pointer",
+            }}
+          >
+            Back
+          </button>
+        </div>
+
+        {error ? <div style={{ marginTop: 8, color: "crimson" }}>{error}</div> : null}
       </div>
     </div>
   );

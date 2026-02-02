@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 const WS_URL = process.env.NEXT_PUBLIC_BACKEND_WS;
 
 export default function WebRtcCallUserPage() {
-  const SESSION_ID = "demo";
+  const router = useRouter();
+  const params = useParams();
+
+  const SESSION_ID = String(params?.sessionId || "").trim();
   const role = "user";
 
   const localVideoRef = useRef(null);
@@ -19,11 +23,53 @@ export default function WebRtcCallUserPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!SESSION_ID) {
+      setStatus("missing-session");
+      setError("Missing sessionId in the URL.");
+      return;
+    }
+    if (!WS_URL) {
+      setStatus("missing-ws-url");
+      setError("Missing NEXT_PUBLIC_BACKEND_WS.");
+      return;
+    }
+
     let cancelled = false;
     let offerSent = false;
-    let pendingIce = []; // candidates that arrive before remoteDescription
 
-    async function sendOffer(ws) {
+    // store ICE until remoteDescription is set
+    let pendingIce = [];
+
+    function safeJsonParse(s) {
+      try {
+        return JSON.parse(s);
+      } catch {
+        return null;
+      }
+    }
+
+    function wsSend(obj) {
+      const ws = wsRef.current;
+      if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+      ws.send(JSON.stringify(obj));
+      return true;
+    }
+
+    async function flushPendingIce(pc) {
+      if (!pendingIce.length) return;
+      const batch = pendingIce;
+      pendingIce = [];
+      for (const iceInit of batch) {
+        try {
+          await pc.addIceCandidate(new RTCIceCandidate(iceInit));
+        } catch (e) {
+          // don’t hard fail; just surface if needed
+          console.warn("addIceCandidate failed:", e);
+        }
+      }
+    }
+
+    async function sendOffer() {
       if (offerSent) return;
       const pc = pcRef.current;
       if (!pc) return;
@@ -34,14 +80,12 @@ export default function WebRtcCallUserPage() {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      ws.send(
-        JSON.stringify({
-          type: "signal",
-          sessionId: SESSION_ID,
-          signalType: "offer",
-          payload: offer,
-        })
-      );
+      wsSend({
+        type: "signal",
+        sessionId: SESSION_ID,
+        signalType: "offer",
+        payload: offer,
+      });
 
       setStatus("offer-sent");
       console.log("WS OUT: offer sent");
@@ -51,7 +95,7 @@ export default function WebRtcCallUserPage() {
       try {
         setStatus("starting");
 
-        // 1) Media (user should have camera; if not, show clear error)
+        // 1) Media
         setStatus("getting-media");
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -60,7 +104,9 @@ export default function WebRtcCallUserPage() {
         if (cancelled) return;
 
         localStreamRef.current = stream;
-        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
 
         // 2) PeerConnection
         const pc = new RTCPeerConnection({
@@ -79,26 +125,21 @@ export default function WebRtcCallUserPage() {
 
         pc.onicecandidate = (ev) => {
           if (!ev.candidate) return;
-          if (wsRef.current?.readyState !== WebSocket.OPEN) return;
 
-          wsRef.current.send(
-            JSON.stringify({
-              type: "signal",
-              sessionId: SESSION_ID,
-              signalType: "ice",
-              payload: ev.candidate,
-            })
-          );
+          // ✅ IMPORTANT: serialize ICE properly
+          const payload = ev.candidate.toJSON ? ev.candidate.toJSON() : ev.candidate;
+
+          wsSend({
+            type: "signal",
+            sessionId: SESSION_ID,
+            signalType: "ice",
+            payload,
+          });
         };
 
         pc.onconnectionstatechange = () => {
           setStatus(`pc-${pc.connectionState}`);
         };
-        // connecting =ICE checks in progress
-        // connected = media flowing
-        // disconnected = temporary network issue
-        // failed = ICE failed, no path worked 
-        // closed = closed
 
         // 3) WebSocket signaling
         setStatus("connecting-ws");
@@ -107,49 +148,45 @@ export default function WebRtcCallUserPage() {
 
         ws.onopen = () => {
           setStatus("ws-open");
+
+          wsSend({ type: "hello", role });
+
+          wsSend({
+            type: "join_session",
+            sessionId: SESSION_ID,
+            role,
+          });
+
           console.log("WS OUT: hello/join_session sent");
-
-          ws.send(JSON.stringify({ type: "hello", role }));
-
-          ws.send(
-            JSON.stringify({
-              type: "join_session",
-              sessionId: SESSION_ID,
-              role,
-            })
-          );
         };
 
         ws.onmessage = async (msg) => {
-          const data = JSON.parse(msg.data);
+          const data = safeJsonParse(msg.data);
+          if (!data) return;
           console.log("WS IN:", data);
 
-          // Surface backend errors clearly
           if (data.type === "error") {
             setError(`${data.code || "ERROR"}: ${data.message || ""}`);
             setStatus("error");
             return;
           }
 
-          // Join ack; if session is already active, tech is already there → offer now.
           if (data.type === "session_joined" && data.sessionId === SESSION_ID) {
             setStatus(`session-joined-${data.status}`);
             if (data.status === "active") {
-              await sendOffer(ws);
+              await sendOffer();
             }
             return;
           }
 
-          // If user is first, server will send peer_joined when tech joins → offer now.
           if (data.type === "peer_joined" && data.sessionId === SESSION_ID) {
             setStatus("peer-joined");
             if (data.role === "tech") {
-              await sendOffer(ws);
+              await sendOffer();
             }
             return;
           }
 
-          // Relayed WebRTC signals
           if (data.type === "signal" && data.sessionId === SESSION_ID) {
             const pc = pcRef.current;
             if (!pc) return;
@@ -157,59 +194,53 @@ export default function WebRtcCallUserPage() {
             if (data.signalType === "answer") {
               setStatus("received-answer");
               await pc.setRemoteDescription(data.payload);
-
-              // flush any ICE that arrived early
-              if (pendingIce.length) {
-                const toAdd = pendingIce;
-                pendingIce = [];
-                for (const c of toAdd) {
-                  try {
-                    await pc.addIceCandidate(c);
-                  } catch {}
-                }
-              }
-
+              await flushPendingIce(pc);
               setStatus("connected-handshake");
               return;
             }
 
             if (data.signalType === "ice" && data.payload) {
-              // If remoteDescription not set yet, queue it
               if (!pc.remoteDescription) {
                 pendingIce.push(data.payload);
                 return;
               }
               try {
-                await pc.addIceCandidate(data.payload);
-              } catch {}
+                await pc.addIceCandidate(new RTCIceCandidate(data.payload));
+              } catch (e) {
+                console.warn("addIceCandidate failed:", e);
+              }
               return;
             }
 
             if (data.signalType === "offer") {
-              // Not expected (user is caller), but safe fallback
+              // fallback (not expected)
               setStatus("received-offer");
               await pc.setRemoteDescription(data.payload);
+              await flushPendingIce(pc);
+
               const answer = await pc.createAnswer();
               await pc.setLocalDescription(answer);
 
-              ws.send(
-                JSON.stringify({
-                  type: "signal",
-                  sessionId: SESSION_ID,
-                  signalType: "answer",
-                  payload: answer,
-                })
-              );
+              wsSend({
+                type: "signal",
+                sessionId: SESSION_ID,
+                signalType: "answer",
+                payload: answer,
+              });
 
               setStatus("sent-answer");
               return;
             }
           }
+
+          if (data.type === "session_ended" && data.sessionId === SESSION_ID) {
+            setStatus("session-ended");
+          }
         };
 
         ws.onerror = () => {
           setError(
-            "WebSocket error. Check NEXT_PUBLIC_BACKEND_WS and Codespaces port 8080 visibility."
+            "WebSocket error. Check NEXT_PUBLIC_BACKEND_WS and Codespaces port visibility."
           );
           setStatus("ws-error");
         };
@@ -237,7 +268,7 @@ export default function WebRtcCallUserPage() {
         localStreamRef.current?.getTracks()?.forEach((t) => t.stop());
       } catch {}
     };
-  }, []);
+  }, [SESSION_ID]);
 
   return (
     <div style={{ padding: 16, display: "grid", gap: 12 }}>
@@ -265,16 +296,32 @@ export default function WebRtcCallUserPage() {
             playsInline
             style={{ width: "100%", borderRadius: 12 }}
           />
+          <div style={{ fontSize: 12, opacity: 0.65, marginTop: 6 }}>
+            (Tech is receive-only right now, so this will stay blank until you enable tech camera.)
+          </div>
         </div>
       </div>
 
       <div style={{ fontSize: 12, opacity: 0.85 }}>
-        <div>role: {role}</div>
-        <div>session: {SESSION_ID}</div>
-        <div>status: {status}</div>
-        {error ? (
-          <div style={{ marginTop: 8, color: "crimson" }}>{error}</div>
-        ) : null}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div>role: {role}</div>
+          <div>session: {SESSION_ID || "—"}</div>
+          <div>status: {status}</div>
+          <button
+            onClick={() => router.back()}
+            style={{
+              marginLeft: "auto",
+              padding: "6px 10px",
+              borderRadius: 10,
+              border: "1px solid rgba(0,0,0,0.12)",
+              background: "white",
+              cursor: "pointer",
+            }}
+          >
+            Back
+          </button>
+        </div>
+        {error ? <div style={{ marginTop: 8, color: "crimson" }}>{error}</div> : null}
       </div>
     </div>
   );

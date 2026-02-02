@@ -1,7 +1,7 @@
 // frontend/app/user-dashboard/page.js
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
@@ -29,6 +29,11 @@ import { CATEGORIES as BASE_CATEGORIES } from "./data/dashboardData";
  *
  * NEW:
  * - Clicking a tech (not Best Available) routes to /tech/[techId]
+ *
+ * PRESENCE (Phase 1):
+ * - Subscribes to backend presence via WS
+ * - If a tech is not present in live presence -> force Offline
+ * - If present -> keep their status (or bump offline->available)
  */
 
 const CATEGORIES = (BASE_CATEGORIES || []).map((c) => ({
@@ -143,6 +148,11 @@ function toTile(tech) {
 
 export default function Page() {
   const router = useRouter();
+  const WS_URL = process.env.NEXT_PUBLIC_BACKEND_WS;
+
+  // Presence: store online tech ids from backend
+  const [onlineTechIds, setOnlineTechIds] = useState([]);
+  const wsRef = useRef(null);
 
   // Default to "all" if available, otherwise first category, otherwise "all"
   const defaultKey =
@@ -159,11 +169,84 @@ export default function Page() {
 
   const sectionTitle = "Start Remote Help";
 
+  // ---- WS presence subscribe ----
+  useEffect(() => {
+    if (!WS_URL) return;
+
+    // avoid reconnect spam in dev refresh
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) return;
+
+    const ws = new WebSocket(WS_URL);
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      // subscribe to live presence updates
+      ws.send(JSON.stringify({ type: "subscribe_presence" }));
+    };
+
+    ws.onmessage = (ev) => {
+      let msg;
+      try {
+        msg = JSON.parse(ev.data);
+      } catch {
+        return;
+      }
+
+      if (msg.type === "presence_state") {
+        const ids = Array.isArray(msg.onlineTechIds) ? msg.onlineTechIds : [];
+        setOnlineTechIds(ids.map((x) => String(x).trim().toLowerCase()));
+        return;
+      }
+
+      if (msg.type === "presence_update") {
+        const id = String(msg.techId || "").trim().toLowerCase();
+        if (!id) return;
+
+        setOnlineTechIds((prev) => {
+          const set = new Set((prev || []).map((x) => String(x).toLowerCase()));
+          if (msg.online) set.add(id);
+          else set.delete(id);
+          return Array.from(set);
+        });
+        return;
+      }
+    };
+
+    ws.onerror = () => {
+      // silent fail for now (presence is optional in MVP)
+    };
+
+    ws.onclose = () => {
+      // Optional: clear presence on disconnect so UI doesn’t lie
+      setOnlineTechIds([]);
+    };
+
+    return () => {
+      try {
+        ws.close();
+      } catch {}
+    };
+  }, [WS_URL]);
+
   const { TECH_TILES, statusLine } = useMemo(() => {
     const best =
       TECH_POOL.find((t) => t.key === "best-available") || TECH_POOL[0];
 
-    const filtered = TECH_POOL
+    const onlineSet = new Set((onlineTechIds || []).map((x) => String(x)));
+
+    // Apply presence override:
+    // - if tech isn't online -> force offline
+    // - if tech is online but profile says offline -> bump to available (demo-friendly)
+    const withPresence = TECH_POOL.map((t) => {
+      if (t.isBest) return t;
+      const isOnline = onlineSet.has(String(t.key).toLowerCase());
+      if (!isOnline) return { ...t, status: "offline" };
+      const s = normStatus(t.status);
+      if (s === "offline") return { ...t, status: "available" };
+      return t;
+    });
+
+    const filtered = withPresence
       .filter((t) => t.key !== "best-available")
       .filter((t) => matchesCategory(t, activeCategory));
 
@@ -182,15 +265,18 @@ export default function Page() {
 
     const tiles = [toTile(best), ...sorted.map(toTile)];
 
-    const onlineCount = TECH_POOL.filter((t) => {
-      const s = normStatus(t.status);
-      return s === "available" || s === "busy" || s === "away";
-    }).length;
+    // Online count = presence intersection with known tech keys (excludes "best-available")
+    const poolKeys = new Set(
+      TECH_POOL.filter((t) => !t.isBest).map((t) => String(t.key).toLowerCase())
+    );
+    const onlineCount = (onlineTechIds || []).filter((id) =>
+      poolKeys.has(String(id).toLowerCase())
+    ).length;
 
     const line = `${onlineCount} online • Avg response 8m`;
 
     return { TECH_TILES: tiles, statusLine: line };
-  }, [activeCategory]);
+  }, [activeCategory, onlineTechIds]);
 
   return (
     <main className={styles.root}>
