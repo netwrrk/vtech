@@ -5,6 +5,16 @@ import { useParams, useRouter } from "next/navigation";
 
 const WS_URL = process.env.NEXT_PUBLIC_BACKEND_WS;
 
+/**
+ * ICE CONFIG SOURCE (STUN-only for now)
+ * Later: replace implementation to fetch from backend (STUN + TURN)
+ */
+async function getIceServers() {
+  return [
+    { urls: "stun:stun.l.google.com:19302" },
+  ];
+}
+
 export default function WebRtcCallUserPage() {
   const router = useRouter();
   const params = useParams();
@@ -108,7 +118,10 @@ export default function WebRtcCallUserPage() {
           localVideoRef.current.srcObject = stream;
         }
 
-        // 2) PeerConnection
+        // 2) ICE CONFIG
+        const iceServers = await getIceServers();
+
+        // 3) PeerConnection
         const pc = new RTCPeerConnection({
           iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
         });
@@ -258,15 +271,9 @@ export default function WebRtcCallUserPage() {
 
     return () => {
       cancelled = true;
-      try {
-        wsRef.current?.close();
-      } catch {}
-      try {
-        pcRef.current?.close();
-      } catch {}
-      try {
-        localStreamRef.current?.getTracks()?.forEach((t) => t.stop());
-      } catch {}
+      try { wsRef.current?.close(); } catch {}
+      try { pcRef.current?.close(); } catch {}
+      try { localStreamRef.current?.getTracks()?.forEach((t) => t.stop()); } catch {}
     };
   }, [SESSION_ID]);
 

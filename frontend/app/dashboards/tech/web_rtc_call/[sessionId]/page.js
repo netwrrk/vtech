@@ -5,6 +5,14 @@ import { useParams, useRouter } from "next/navigation";
 
 const WS_URL = process.env.NEXT_PUBLIC_BACKEND_WS;
 
+/**
+ * ICE CONFIG SOURCE (STUN-only for now)
+ * Later: replace to fetch STUN + TURN from backend
+ */
+async function getIceServers() {
+  return [{ urls: "stun:stun.l.google.com:19302" }];
+}
+
 function getTechIdFromUrlOrStorage() {
   if (typeof window === "undefined") return "";
   const qs = new URLSearchParams(window.location.search);
@@ -87,10 +95,8 @@ export default function WebRtcCallTechPage() {
       try {
         setStatus("starting");
 
-        // ✅ TECH = receive-only for now
-        const pc = new RTCPeerConnection({
-          iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-        });
+        const iceServers = await getIceServers();
+        const pc = new RTCPeerConnection({ iceServers });
         pcRef.current = pc;
 
         pc.addTransceiver("video", { direction: "recvonly" });
