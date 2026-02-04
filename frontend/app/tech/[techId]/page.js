@@ -90,15 +90,16 @@ export default function TechContactPage() {
     };
 
     ws.onopen = () => {
-      // identify + request the call
       ws.send(JSON.stringify({ type: "hello", role: "user" }));
+
       ws.send(
         JSON.stringify({
-          type: "call_request",
-          techId: targetTechId, // must match registered presence techId
+          type: "create_session",
+          sessionId: SESSION_ID,
         })
       );
     };
+
 
     ws.onerror = () => {
       finish(
@@ -114,8 +115,19 @@ export default function TechContactPage() {
         return;
       }
 
-      if (msg.type === "error") {
-        finish(`${msg.code || "ERROR"}: ${msg.message || "Call failed."}`);
+      if (data.type === "error" && data.code === "SESSION_TAKEN") {
+        const fresh = makeRoomCode7();
+        router.replace(`/dashboards/user/web_rtc_call/${fresh}`);
+        return;
+      }
+
+      // After creating the session, join it
+      if (data.type === "session_created" && data.sessionId === SESSION_ID) {
+        wsSend({
+          type: "join_session",
+          sessionId: SESSION_ID,
+          role,
+        });
         return;
       }
 
@@ -187,7 +199,23 @@ export default function TechContactPage() {
       ? `~${Math.max(1, Math.round(tech.etaMin))}m`
       : null;
 
-  const canStartSession = s === "available" && !starting;
+  const canStartSession = s === "available";
+
+  function openChat() {
+    router.push(`/sessions?tech=${encodeURIComponent(tech.id)}&mode=chat`);
+  }
+
+  function makeRoomCode7() {
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let out = "";
+    for (let i = 0; i < 7; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
+    return out;
+  }
+
+  function startSession() {
+    const room = makeRoomCode7();
+    router.push(`/dashboards/user/web_rtc_call/${encodeURIComponent(techId)}?session=${room}`);
+  } 
 
   return (
     <main className={styles.root}>

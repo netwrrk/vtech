@@ -58,6 +58,8 @@ const HelloMsg = BaseMsg.extend({
 
 const CreateSessionMsg = BaseMsg.extend({
   type: z.literal("create_session"),
+  sessionId: z.string().optional(),
+  requestedTechId: z.string().optional(),
 });
 
 const JoinSessionMsg = BaseMsg.extend({
@@ -105,15 +107,6 @@ const AnyMsg = z.union([
   CallRequestMsg,
 ]);
 
-/* -------------------- demo session (optional) -------------------- */
-sessions.set("demo", {
-  sessionId: "demo",
-  status: "waiting",
-  user: null,
-  tech: null,
-  createdAt: Date.now(),
-  expiresAt: Date.now() + WAITING_TTL_MS,
-});
 
 /* -------------------- helpers -------------------- */
 function now() {
@@ -196,7 +189,6 @@ function isExpired(session) {
 // periodic cleanup to avoid memory leaks
 setInterval(() => {
   for (const [sid, s] of sessions.entries()) {
-    if (sid === "demo") continue;
     if (isExpired(s)) sessions.delete(sid);
   }
 }, CLEANUP_INTERVAL_MS);
@@ -321,21 +313,63 @@ wss.on("connection", (ws) => {
       return;
     }
 
-    // ---- optional: legacy manual create_session ----
     if (msg.type === "create_session") {
-      const sessionId = nanoid(8);
-      const session = {
-        sessionId,
-        status: "waiting",
-        user: null,
-        tech: null,
-        createdAt: now(),
-        expiresAt: now() + WAITING_TTL_MS,
-      };
+  // If client requests a specific sessionId, enforce format + uniqueness
+  const requested = String(msg.sessionId || "").trim();
 
-      sessions.set(sessionId, session);
-      return send(ws, { type: "session_created", sessionId });
+  if (requested) {
+    const ok = /^[A-Z0-9]{7}$/.test(requested);
+    if (!ok) {
+      return send(ws, {
+        type: "error",
+        code: "BAD_SESSION_ID",
+        message: "sessionId must be 7 chars (A-Z, 0-9).",
+      });
     }
+
+    if (sessions.has(requested)) {
+      return send(ws, {
+        type: "error",
+        code: "SESSION_TAKEN",
+        message: "Session already exists.",
+      });
+    }
+
+    const session = {
+      sessionId: requested,
+      status: "waiting",
+      user: null,
+      tech: null,
+      requestedTechId: msg.requestedTechId ? normTechId(msg.requestedTechId) : undefined,
+      createdByWsId: wsId,
+      createdAt: now(),
+      expiresAt: now() + WAITING_TTL_MS,
+    };
+
+    sessions.set(requested, session);
+    return send(ws, { type: "session_created", sessionId: requested });
+  }
+
+  // Otherwise server generates one (collision-safe)
+  let sessionId;
+  do {
+    sessionId = nanoid(7).toUpperCase().replace(/[^A-Z0-9]/g, "A");
+  } while (sessions.has(sessionId));
+
+  const session = {
+    sessionId,
+    status: "waiting",
+    user: null,
+    tech: null,
+    createdByWsId: wsId,
+    createdAt: now(),
+    expiresAt: now() + WAITING_TTL_MS,
+  };
+
+  sessions.set(sessionId, session);
+  return send(ws, { type: "session_created", sessionId });
+  }
+
 
     // ---- join_session ----
     if (msg.type === "join_session") {
@@ -486,7 +520,6 @@ wss.on("connection", (ws) => {
 
     // clean up sessions where this wsId was user/tech
     for (const [sid, session] of sessions.entries()) {
-      if (sid === "demo") continue;
 
       let changed = false;
 
