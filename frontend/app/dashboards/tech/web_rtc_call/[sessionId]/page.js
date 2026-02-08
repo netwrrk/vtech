@@ -32,6 +32,7 @@ export default function WebRtcCallTechPage() {
 
   const localVideoRef = useRef(null); // unused for now (receive-only)
   const remoteVideoRef = useRef(null);
+  const localStreamRef = useRef(null);
 
   const pcRef = useRef(null);
   const wsRef = useRef(null);
@@ -99,8 +100,23 @@ export default function WebRtcCallTechPage() {
         const pc = new RTCPeerConnection({ iceServers });
         pcRef.current = pc;
 
-        pc.addTransceiver("video", { direction: "recvonly" });
-        pc.addTransceiver("audio", { direction: "recvonly" });
+                // --- TECH: get local media (audio + video) ---
+        const localStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true,
+        });
+
+        localStreamRef.current = localStream;
+
+        // Optional: show tech's own camera
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = localStream;
+        }
+
+        // Add tracks to PeerConnection (this makes tech a sender)
+        for (const track of localStream.getTracks()) {
+          pc.addTrack(track, localStream);
+        }
 
         pc.ontrack = (ev) => {
           const [remoteStream] = ev.streams;
@@ -247,10 +263,11 @@ export default function WebRtcCallTechPage() {
     start();
 
     return () => {
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(t => t.stop());
+      }
       try {
         wsRef.current?.close();
-      } catch {}
-      try {
         pcRef.current?.close();
       } catch {}
     };
