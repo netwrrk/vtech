@@ -1,4 +1,4 @@
-// app/tech/[techId]/page.js
+// frontend/app/tech/[techId]/page.js
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -6,6 +6,9 @@ import { useParams, useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
 import { getTechById, normStatus, statusLabel } from "../techData";
+
+// shared WS helper (keeps this consistent with call pages)
+import { createSignalingClient } from "../../shared/sessions/signaling";
 
 export default function TechContactPage() {
   const router = useRouter();
@@ -16,19 +19,20 @@ export default function TechContactPage() {
 
   const WS_URL = process.env.NEXT_PUBLIC_BACKEND_WS;
 
-  const wsRef = useRef(null);
-  const startingRef = useRef(false); // avoids stale closure in ws.onclose
+  const signalingRef = useRef(null);
+  const startingRef = useRef(false);
+
   const [starting, setStarting] = useState(false);
   const [startErr, setStartErr] = useState("");
 
-  // Cleanup socket on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      try {
-        wsRef.current?.close();
-      } catch {}
-      wsRef.current = null;
       startingRef.current = false;
+      try {
+        signalingRef.current?.close?.();
+      } catch {}
+      signalingRef.current = null;
     };
   }, []);
 
@@ -48,7 +52,6 @@ export default function TechContactPage() {
   async function startSession() {
     if (!tech) return;
 
-    // Make sure we use the SAME id string that presence uses
     const targetTechId = String(tech.id || "").trim().toLowerCase();
     if (!targetTechId) {
       setStartErr("Missing tech.id (cannot place call).");
@@ -60,92 +63,71 @@ export default function TechContactPage() {
       return;
     }
 
-    // guard double click
     if (startingRef.current) return;
 
     setStartErr("");
     setStarting(true);
     startingRef.current = true;
 
-    // If an old socket exists, nuke it.
+    // close any old client
     try {
-      wsRef.current?.close();
+      signalingRef.current?.close?.();
     } catch {}
-    wsRef.current = null;
-
-    const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
+    signalingRef.current = null;
 
     const finish = (errMsg = "") => {
       if (errMsg) setStartErr(errMsg);
-
       setStarting(false);
       startingRef.current = false;
 
       try {
-        ws.close();
+        signalingRef.current?.close?.();
       } catch {}
-
-      if (wsRef.current === ws) wsRef.current = null;
+      signalingRef.current = null;
     };
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ type: "hello", role: "user" }));
+    try {
+      const signaling = createSignalingClient({
+        wsUrl: WS_URL,
+        role: "user",
+        onOpen: () => {
+          // request call session
+          signaling.send({ type: "call_request", techId: targetTechId });
+        },
+        onMessage: (msg) => {
+          if (msg?.type === "error") {
+            finish(msg.message || "Failed to start session.");
+            return;
+          }
 
-      ws.send(
-        JSON.stringify({
-          type: "call_request",
-          techId: targetTechId,
-        })
-      );
-    };
+          // backend returns this when call_request succeeds
+          if (msg?.type === "call_created" && msg.sessionId) {
+            const sessionId = String(msg.sessionId).trim();
 
+            // navigate into the call page (this will open a new WS and join_session)
+            setStarting(false);
+            startingRef.current = false;
 
-    ws.onerror = () => {
-      finish(
-        "WebSocket error. Check NEXT_PUBLIC_BACKEND_WS + backend port visibility."
-      );
-    };
+            try {
+              signaling.close();
+            } catch {}
+            if (signalingRef.current === signaling) signalingRef.current = null;
 
-    ws.onmessage = (ev) => {
-      let msg;
-      try {
-        msg = JSON.parse(ev.data);
-      } catch {
-        return;
-      }
+            router.push(`/dashboards/user/call/${encodeURIComponent(sessionId)}`);
+            return;
+          }
+        },
+        onError: () => finish("WebSocket error. Check NEXT_PUBLIC_BACKEND_WS + port visibility."),
+        onClose: () => {
+          if (startingRef.current) finish("WS closed before call could be created.");
+        },
+      });
 
-      if (msg.type === "error") {
-        finish(msg.message || "Failed to start session.");
-        return;
-      }
-
-      // backend returns this when call_request succeeds
-      // NOTE: server uses "call_created" (not "call_created_ack")
-      if (msg.type === "call_created" && msg.sessionId) {
-        const sessionId = String(msg.sessionId).trim();
-
-        // close socket then navigate
-        setStarting(false);
-        startingRef.current = false;
-        try {
-          ws.close();
-        } catch {}
-        if (wsRef.current === ws) wsRef.current = null;
-
-        router.push(
-          `/dashboards/user/web_rtc_call/${encodeURIComponent(sessionId)}`
-        );
-        return;
-      }
-    };
-
-    ws.onclose = () => {
-      // if it closes before success and we're still starting, surface it
-      if (startingRef.current) {
-        finish("WS closed before call could be created.");
-      }
-    };
+      signalingRef.current = signaling;
+      signaling.connect();
+    } catch (e) {
+      finish(e?.message || String(e));
+    }
   }
 
   if (!tech) {
@@ -190,17 +172,6 @@ export default function TechContactPage() {
 
   const canStartSession = s === "available";
 
-  function openChat() {
-    router.push(`/sessions?tech=${encodeURIComponent(tech.id)}&mode=chat`);
-  }
-
-  function makeRoomCode7() {
-    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let out = "";
-    for (let i = 0; i < 7; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
-    return out;
-  }
-
   return (
     <main className={styles.root}>
       <div className={styles.shell}>
@@ -241,10 +212,7 @@ export default function TechContactPage() {
           </div>
 
           {!!startErr && (
-            <div
-              className={styles.sectionBody}
-              style={{ color: "crimson", marginTop: 10 }}
-            >
+            <div className={styles.sectionBody} style={{ color: "crimson", marginTop: 10 }}>
               {startErr}
             </div>
           )}
@@ -257,7 +225,7 @@ export default function TechContactPage() {
             <button
               className={styles.btnSecondary}
               onClick={startSession}
-              disabled={!canStartSession}
+              disabled={!canStartSession || !WS_URL || starting}
               title={
                 !WS_URL
                   ? "Backend WS not configured"

@@ -219,7 +219,7 @@ export default function Page() {
           const qs = idToUse ? `?techId=${encodeURIComponent(idToUse)}` : "";
           addLog(`autoJoin enabled -> routing to call ${sid}${qs}`);
           router.push(
-            `/dashboards/tech/web_rtc_call/${encodeURIComponent(sid)}${qs}`
+            `/dashboards/tech/call/${encodeURIComponent(sid)}${qs}`
           );
         }
 
@@ -288,7 +288,7 @@ export default function Page() {
 
     const qs = idToUse ? `?techId=${encodeURIComponent(idToUse)}` : "";
     router.push(
-      `/dashboards/tech/web_rtc_call/${encodeURIComponent(incoming.sessionId)}${qs}`
+      `/dashboards/tech/call/${encodeURIComponent(incoming.sessionId)}${qs}`
     );
   }
 
