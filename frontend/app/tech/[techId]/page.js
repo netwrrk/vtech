@@ -94,8 +94,8 @@ export default function TechContactPage() {
 
       ws.send(
         JSON.stringify({
-          type: "create_session",
-          sessionId: SESSION_ID,
+          type: "call_request",
+          techId: targetTechId,
         })
       );
     };
@@ -115,19 +115,8 @@ export default function TechContactPage() {
         return;
       }
 
-      if (data.type === "error" && data.code === "SESSION_TAKEN") {
-        const fresh = makeRoomCode7();
-        router.replace(`/dashboards/user/web_rtc_call/${fresh}`);
-        return;
-      }
-
-      // After creating the session, join it
-      if (data.type === "session_created" && data.sessionId === SESSION_ID) {
-        wsSend({
-          type: "join_session",
-          sessionId: SESSION_ID,
-          role,
-        });
+      if (msg.type === "error") {
+        finish(msg.message || "Failed to start session.");
         return;
       }
 
@@ -211,11 +200,6 @@ export default function TechContactPage() {
     for (let i = 0; i < 7; i++) out += alphabet[Math.floor(Math.random() * alphabet.length)];
     return out;
   }
-
-  function startSession() {
-    const room = makeRoomCode7();
-    router.push(`/dashboards/user/web_rtc_call/${encodeURIComponent(techId)}?session=${room}`);
-  } 
 
   return (
     <main className={styles.root}>

@@ -285,7 +285,7 @@ wss.on("connection", (ws) => {
         });
       }
 
-      const sessionId = nanoid(8);
+      const sessionId = nanoid(8).toUpperCase();
       const session = {
         sessionId,
         status: "waiting",
