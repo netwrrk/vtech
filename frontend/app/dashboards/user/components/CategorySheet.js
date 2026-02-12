@@ -1,4 +1,28 @@
-// frontend/app/user-dashboard/components/CategorySheet.js
+/**
+ * CATEGORY SHEET COMPONENT
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/CategorySheet.js
+ *
+ * Purpose:
+ * Bottom-sheet selector used on the User Dashboard
+ * for choosing equipment categories with smooth
+ * open/close animations and mobile-friendly behavior.
+ *
+ * Core Responsibilities:
+ * - Render modal bottom sheet with backdrop
+ * - Animate open/close transitions
+ * - Lock body scroll while open
+ * - Close on backdrop click or Escape key
+ * - Highlight active category
+ * - Trigger onSelect and onClose callbacks
+ *
+ * Data Sources:
+ * - Props: open, title, items[], activeKey, onSelect, onClose
+ *
+ * Security / Env:
+ * - No environment dependencies (UI modal component)
+ */
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";

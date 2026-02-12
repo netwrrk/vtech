@@ -1,5 +1,29 @@
-// frontend/app/shared/webrtc/peer.js
-// Shared RTCPeerConnection builder for VTech call pages.
+/**
+ * PEER CONNECTION MODULE
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/webrtc/peer.js
+ *
+ * Purpose:
+ * Create and configure a shared RTCPeerConnection
+ * instance for both user and tech call flows.
+ *
+ * Core Responsibilities:
+ * - Initialize RTCPeerConnection with ICE config
+ * - Configure role-based behavior (user vs tech)
+ * - Wire remote media to video element
+ * - Emit local ICE candidates to signaling layer
+ * - Surface connection state changes
+ * - Provide safe peer shutdown helper
+ *
+ * Data Sources:
+ * - ICE configuration from getIceServers()
+ * - Media tracks (added in userFlow or techFlow)
+ * - Signaling layer for ICE exchange
+ *
+ * Security / Env:
+ * - Depends indirectly on ICE config (may later use backend env)
+ * - No direct environment variable access
+ */
 
 import { getIceServers } from "./ice";
 

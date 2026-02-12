@@ -1,5 +1,29 @@
-// app/tech/techData.js
-// Single source of truth for tech profiles (used by /tech/[techId])
+/**
+ * TECH PROFILE DATA MODULE
+ * ------------------------------------------------------
+ * Route: app/tech/techData.js
+ *
+ * Purpose:
+ * Centralized source of truth for tech profile metadata
+ * used by /tech/[techId] pages and related UI.
+ *
+ * Core Responsibilities:
+ * - Define static tech profile objects
+ * - Provide normalized status handling
+ * - Expose helper utilities:
+ *   - normStatus()
+ *   - statusLabel()
+ *   - getTechById()
+ *
+ * Data Sources:
+ * - Local static TECHS array (profile metadata)
+ * - Avatar image paths (public assets)
+ *
+ * Security / Env:
+ * - No environment variables required
+ * - No external API calls
+ * - Pure client-safe static data + helpers
+ */
 
 export const TECHS = [
   {

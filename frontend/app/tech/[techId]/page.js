@@ -1,4 +1,30 @@
-// frontend/app/tech/[techId]/page.js
+/**
+ * TECH CONTACT PAGE
+ * ------------------------------------------------------
+ * Route: frontend/app/tech/[techId]/page.js
+ *
+ * Purpose:
+ * Displays an individual tech’s profile and allows a user
+ * to start a virtual session or message the tech.
+ *
+ * Core Responsibilities:
+ * - Resolve tech profile from dynamic route param
+ * - Render profile details (avatar, role, status, expertise, background)
+ * - Initiate call_request via WebSocket signaling
+ * - Navigate to /dashboards/user/call/[sessionId] on call_created
+ * - Provide fallback UI when tech is not found
+ *
+ * Data Sources:
+ * - getTechById() from techData
+ * - createSignalingClient() (shared signaling layer)
+ * - NEXT_PUBLIC_BACKEND_WS (env)
+ *
+ * Security / Env:
+ * - Requires NEXT_PUBLIC_BACKEND_WS for session creation
+ * - Session creation occurs via backend WS protocol
+ * - Cleans up WS client on unmount to prevent leaks
+ */
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";

@@ -1,4 +1,32 @@
-// frontend/app/dashboards/user/call/[sessionId]/page.js
+/**
+ * USER WEBRTC CALL PAGE
+ * ------------------------------------------------------
+ * Route: frontend/app/dashboards/user/call/[sessionId]/page.js
+ *
+ * Purpose:
+ * Handles the user-side WebRTC session.
+ * Captures local media, connects to signaling,
+ * and establishes a peer connection with a tech.
+ *
+ * Core Responsibilities:
+ * - Validate sessionId and WebSocket environment
+ * - Initialize user WebRTC flow (media + RTCPeerConnection)
+ * - Connect to backend signaling server
+ * - Join session and manage session lifecycle states
+ * - Send offer when tech joins
+ * - Handle incoming WebRTC signaling messages
+ * - Render local and remote video streams
+ *
+ * Data Sources:
+ * - URL param: sessionId
+ * - Shared modules: signaling client, userFlow, CALL_STATUS
+ * - Environment: NEXT_PUBLIC_BACKEND_WS
+ *
+ * Security / Env:
+ * - Requires NEXT_PUBLIC_BACKEND_WS for signaling
+ * - Media access subject to browser permissions
+ */
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";

@@ -1,6 +1,27 @@
-// frontend/app/user-dashboard/components/icons.js
-// Minimal icon set for VTech User Dashboard (chips + action tiles)
-// Categories are now "hands-on assistance" equipment/service types.
+/**
+ * DASHBOARD ICONS MODULE
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/icons.js
+ *
+ * Purpose:
+ * Centralized SVG icon library for the User Dashboard.
+ * Provides category icons, action tile icons, and
+ * convenience mapping objects for dynamic rendering.
+ *
+ * Core Responsibilities:
+ * - Define reusable SVG icon components
+ * - Provide category icons for equipment filtering
+ * - Provide action tile icons for dashboard features
+ * - Export CATEGORY_ICON_MAP and DEVICE_ICON_MAP
+ *   for dynamic lookup in UI components
+ *
+ * Data Sources:
+ * - CATEGORY_ICON_MAP (category → icon component)
+ * - DEVICE_ICON_MAP (action key → icon component)
+ *
+ * Security / Env:
+ * - No environment dependencies (static UI asset module)
+ */
 
 import React from "react";
 

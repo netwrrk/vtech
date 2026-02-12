@@ -1,3 +1,33 @@
+/**
+ * TECH DASHBOARD
+ * ------------------------------------------------------
+ * Route: frontend/app/dashboards/tech/page.js
+ *
+ * Purpose:
+ * Acts as the Tech-side control console for signaling,
+ * presence registration, and session management before
+ * entering the WebRTC call page.
+ *
+ * Core Responsibilities:
+ * - Check backend health endpoint
+ * - Establish and maintain WebSocket connection
+ * - Identify as role "tech" via hello handshake
+ * - Register and persist tech presence (localStorage + query param)
+ * - Handle incoming_call events
+ * - Join or end sessions
+ * - Route to /dashboards/tech/call/[sessionId]
+ * - Maintain real-time event log
+ *
+ * Data Sources:
+ * - Backend HTTP /healthz endpoint
+ * - Backend WebSocket signaling server
+ * - localStorage (techId persistence)
+ *
+ * Security / Env:
+ * - Requires NEXT_PUBLIC_BACKEND_HTTP
+ * - Requires NEXT_PUBLIC_BACKEND_WS
+ */
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";

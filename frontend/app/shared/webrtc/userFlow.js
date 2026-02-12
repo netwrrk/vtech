@@ -1,5 +1,34 @@
-// frontend/app/shared/webrtc/userFlow.js
-// User-side WebRTC flow: capture media, create offer once, handle answer + ICE.
+/**
+ * USER WEBRTC FLOW MODULE
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/webrtc/userFlow.js
+ *
+ * Purpose:
+ * Encapsulate the user-side WebRTC lifecycle:
+ * capture local media, create/send offer, handle answer,
+ * and manage ICE candidate buffering.
+ *
+ * Core Responsibilities:
+ * - Request camera + microphone via getUserMedia
+ * - Attach local stream to video element
+ * - Create RTCPeerConnection (sendrecv)
+ * - Add local media tracks to peer
+ * - Generate and send offer (once)
+ * - Handle incoming answer + ICE candidates
+ * - Queue ICE until remoteDescription is set
+ * - Provide cleanup (stop media + close peer)
+ *
+ * Data Sources:
+ * - Shared peer connection builder (peer.js)
+ * - ICE queue utility (iceQueue.js)
+ * - Signaling layer for offer/answer/ICE exchange
+ * - Browser mediaDevices API
+ *
+ * Security / Env:
+ * - Requires user media permissions (camera/mic)
+ * - No direct environment variable usage
+ * - ICE config delegated to shared ICE module
+ */
 
 import { createPeerConnection } from "./peer";
 import { createIceQueue } from "./iceQueue";

@@ -1,4 +1,31 @@
-// frontend/app/user-dashboard/page.js
+/**
+ * USER DASHBOARD HOME
+ * ------------------------------------------------------
+ * Route: frontend/app/dashboards/user/page.js
+ *
+ * Purpose:
+ * Primary landing page for Users to initiate remote help.
+ * Displays available techs, supports category filtering,
+ * and reflects live tech availability through presence.
+ *
+ * Core Responsibilities:
+ * - Render dashboard layout (TopBar, CategoryBar, DeviceGrid)
+ * - Filter techs by selected equipment category
+ * - Subscribe to backend presence via WebSocket
+ * - Override tech status based on live online state
+ * - Sort techs by availability and ETA
+ * - Route to /tech/[techId] when a tech is selected
+ *
+ * Data Sources:
+ * - BASE_CATEGORIES (dashboardData)
+ * - CATEGORY_ICON_MAP (icon mapping)
+ * - Local TECH_POOL (MVP tech dataset)
+ * - Backend WebSocket presence stream
+ *
+ * Security / Env:
+ * - Requires NEXT_PUBLIC_BACKEND_WS for presence subscription
+ */
+
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";

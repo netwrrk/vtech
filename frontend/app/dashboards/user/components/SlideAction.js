@@ -1,4 +1,31 @@
-// frontend/app/user-dashboard/components/SlideAction.js
+/**
+ * SLIDE ACTION COMPONENT
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/SlideAction.js
+ *
+ * Purpose:
+ * Dual-mode interaction component used on the User Dashboard.
+ * Provides either:
+ * 1) A "slide to confirm" secure session trigger
+ * 2) A tech action bottom sheet with contextual actions
+ *
+ * Core Responsibilities:
+ * - Render interactive slide-to-confirm control
+ * - Handle drag, threshold completion, and keyboard activation
+ * - Render modal tech action sheet when mode="tech"
+ * - Display tech status, ETA, and optional stats
+ * - Trigger action callbacks (onStart, onWorkOrder, onRequestNext)
+ * - Provide accessible dialog and button semantics
+ *
+ * Data Sources:
+ * - Props: label, helper, disabled, onComplete
+ * - Tech mode props: tech object (name, specialty, status, etaMin, avatarUrl, stats)
+ * - Callback props for session and workflow actions
+ *
+ * Security / Env:
+ * - No direct environment dependencies (UI interaction component)
+ */
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";

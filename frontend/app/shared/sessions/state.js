@@ -1,5 +1,26 @@
-// frontend/app/shared/sessions/state.js
-// Single source of truth for session/call UI statuses across pages.
+/**
+ * CALL STATUS STATE MODULE
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/sessions/state.js
+ *
+ * Purpose:
+ * Centralized status definitions and helpers for
+ * session lifecycle and WebRTC call state across
+ * user and tech dashboards.
+ *
+ * Core Responsibilities:
+ * - Define immutable CALL_STATUS constants
+ * - Provide consistent UI state values
+ * - Normalize peer connection states (pc-*)
+ * - Identify fatal and live session states
+ *
+ * Data Sources:
+ * - Shared across user/tech call pages
+ * - WebRTC peer connection state strings
+ *
+ * Security / Env:
+ * - No environment dependencies (pure state utility module)
+ */
 
 export const CALL_STATUS = Object.freeze({
   INIT: "init",

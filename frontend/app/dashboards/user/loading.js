@@ -1,4 +1,21 @@
-// frontend/app/user-dashboard/loading.js
+/**
+ * USER DASHBOARD LOADING STATE
+ * ------------------------------------------------------
+ * Route: frontend/app/dashboards/user/loading.js
+ *
+ * Purpose:
+ * Provides a route-level loading skeleton while the
+ * User Dashboard content is fetching or hydrating.
+ *
+ * Core Responsibilities:
+ * - Render structural placeholders matching dashboard layout
+ * - Preserve layout stability during async rendering
+ * - Improve perceived performance with immediate visual feedback
+ *
+ * Data Sources:
+ * - Next.js route segment loading mechanism
+ */
+
 import styles from "./page.module.css";
 
 function Block({ style }) {

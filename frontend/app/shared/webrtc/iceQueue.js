@@ -1,6 +1,26 @@
-// frontend/app/shared/webrtc/iceQueue.js
-// ICE candidate buffering until remoteDescription is set.
-// Prevents addIceCandidate errors during offer/answer race.
+/**
+ * ICE QUEUE MODULE
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/webrtc/iceQueue.js
+ *
+ * Purpose:
+ * Buffer incoming ICE candidates until the peer
+ * connection has a remoteDescription set, preventing
+ * race-condition errors during offer/answer exchange.
+ *
+ * Core Responsibilities:
+ * - Temporarily store ICE candidates
+ * - Safely flush candidates into RTCPeerConnection
+ * - Prevent addIceCandidate failures during signaling races
+ * - Provide queue state helpers (hasPending, clear)
+ *
+ * Data Sources:
+ * - Incoming WebRTC ICE candidates from signaling layer
+ *
+ * Security / Env:
+ * - No environment dependencies
+ * - Pure client-side WebRTC utility
+ */
 
 export function createIceQueue() {
   /** @type {any[]} */

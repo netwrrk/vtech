@@ -1,3 +1,41 @@
+/**
+ * VTECH SIGNALING BACKEND (Express + WebSocket)
+ * ------------------------------------------------------
+ * Route: backend/server.js
+ *
+ * Purpose:
+ * Central real-time signaling server for VTech.
+ * Manages session lifecycle, presence tracking, and WebRTC offer/answer/ICE routing
+ * between users and techs using WebSockets.
+ *
+ * Core Responsibilities:
+ * - Maintain in-memory session store (waiting | active)
+ * - Handle call_request → session creation with TTL protection
+ * - Enforce role-based join_session logic (user / assigned tech)
+ * - Relay WebRTC signals (offer, answer, ice) between peers
+ * - Manage tech presence (register_tech, subscribe_presence)
+ * - Handle session expiration + periodic cleanup
+ * - Broadcast peer_joined / peer_left / session_ended events
+ *
+ * Data Sources:
+ * - In-memory Maps:
+ *   - sessions
+ *   - clients
+ *   - techPresence
+ *   - presenceSubscribers
+ * - Environment variables:
+ *   - PORT
+ *   - WAITING_TTL_MS
+ *   - ACTIVE_TTL_MS
+ *   - CLEANUP_INTERVAL_MS
+ *
+ * Security / Env:
+ * - Validates all WS messages with Zod schemas
+ * - Enforces tech assignment for call_request sessions
+ * - TTL prevents orphaned or zombie sessions
+ * - Designed for MVP (single-node, in-memory; not horizontally scaled)
+ */
+
 import "dotenv/config";
 import express from "express";
 import cors from "cors";

@@ -1,4 +1,27 @@
-// frontend/app/user-dashboard/components/ActionTiles.js
+/**
+ * ACTION TILES COMPONENT
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/ActionTiles.js
+ *
+ * Purpose:
+ * Reusable tile-based action grid used within the
+ * User Dashboard. Supports both legacy quick actions
+ * and dynamic device-card layouts.
+ *
+ * Core Responsibilities:
+ * - Render action tiles with icon, label, and subtitle
+ * - Support legacy mode (Request Tech / Run Scan)
+ * - Support grid mode via dynamic `items` prop
+ * - Provide accessible button-based interactions
+ *
+ * Data Sources:
+ * - Props: onPrimary, onSecondary, items[]
+ * - Local SVG icon components
+ *
+ * Security / Env:
+ * - No environment dependencies (UI-only component)
+ */
+
 "use client";
 
 import styles from "../page.module.css";

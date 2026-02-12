@@ -1,4 +1,26 @@
-// frontend/app/user-dashboard/components/TopBar.js
+/**
+ * TOP BAR COMPONENT
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/TopBar.js
+ *
+ * Purpose:
+ * Header bar used on the User Dashboard.
+ * Displays optional kicker/title content and
+ * provides access to profile/settings.
+ *
+ * Core Responsibilities:
+ * - Render centered kicker and title (if provided)
+ * - Maintain balanced layout spacing
+ * - Provide profile/settings button (onSettings callback)
+ * - Ensure accessible button semantics
+ *
+ * Data Sources:
+ * - Props: kicker, title, onSettings
+ *
+ * Security / Env:
+ * - No environment dependencies (UI layout component)
+ */
+
 import styles from "../page.module.css";
 
 function IconUser(props) {

@@ -1,4 +1,27 @@
-// frontend/app/user-dashboard/components/HeroCard.js
+/**
+ * HERO CARD COMPONENT
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/HeroCard.js
+ *
+ * Purpose:
+ * Featured status card displayed on the User Dashboard.
+ * Highlights system health and secure connection state
+ * with a visual device preview.
+ *
+ * Core Responsibilities:
+ * - Display primary system stat (value + label)
+ * - Show secure connection pill with status text
+ * - Provide optional open action via onOpen callback
+ * - Render device preview mock on right panel
+ *
+ * Data Sources:
+ * - Props: statValue, statLabel, primary, secondary, rightLabel, onOpen
+ * - Local SVG icon components
+ *
+ * Security / Env:
+ * - No environment dependencies (UI-only component)
+ */
+
 import styles from "../page.module.css";
 
 const STROKE = 1.6;

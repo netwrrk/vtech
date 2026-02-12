@@ -1,6 +1,29 @@
-// frontend/app/user-dashboard/data/dashboardData.js
-// VTech (Hands-On Assistance) — Dashboard skeleton data
-// Focus: route by equipment type + start help fast via tech tiles.
+/**
+ * USER DASHBOARD DATA CONFIG
+ * ------------------------------------------------------
+ * Route: frontend/app/dashboards/user/data/dashboardData.js
+ *
+ * Purpose:
+ * Provides static configuration and seed data for the
+ * User Dashboard, including equipment categories and
+ * available tech definitions for MVP rendering.
+ *
+ * Core Responsibilities:
+ * - Define available equipment categories
+ * - Define tech metadata (id, specialty, status, ETA)
+ * - Support category-based filtering via specialties
+ * - Provide default status line text
+ * - Route by equipment type + start help fast via tech tiles.
+
+ *
+ * Data Exports:
+ * - CATEGORIES (equipment filter options)
+ * - TECHS (tech tile definitions)
+ * - STATUSLINE_DEFAULT (optional UI helper text)
+ *
+ * Security / Env:
+ * - No environment dependencies (static config only)
+ */
 
 export const CATEGORIES = [
   { key: "all", label: "All" },

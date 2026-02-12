@@ -1,4 +1,29 @@
-// frontend/app/user-dashboard/components/DeviceGrid.js
+/**
+ * DEVICE GRID COMPONENT
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/DeviceGrid.js
+ *
+ * Purpose:
+ * Renders the 2-column card grid used on the User Dashboard
+ * for both equipment tiles and tech selection tiles.
+ *
+ * Core Responsibilities:
+ * - Render icon-based tiles (legacy mode)
+ * - Render tech tiles with avatar, status, and ETA
+ * - Normalize and display status (Online/Busy/Away/Offline)
+ * - Extract and format ETA from subtitle text
+ * - Provide fallback initials when avatar image fails
+ * - Maintain consistent tile proportions and layout
+ * - Trigger onOpen callback when a tile is selected
+ *
+ * Data Sources:
+ * - Props: items[], onOpen, ariaLabel
+ * - Tile fields: key, title, sub/subtitle, avatarUrl, status, etaMin, isBest
+ *
+ * Security / Env:
+ * - No environment dependencies (UI rendering component)
+ */
+
 "use client";
 
 import { useMemo, useState } from "react";

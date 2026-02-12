@@ -1,5 +1,30 @@
-// frontend/app/shared/webrtc/techFlow.js
-// Tech-side WebRTC flow: recvonly, handle offer -> answer, handle ICE with queue.
+/**
+ * TECH WEBRTC FLOW MODULE
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/webrtc/techFlow.js
+ *
+ * Purpose:
+ * Encapsulate the tech-side WebRTC lifecycle:
+ * receive-only setup, offer handling, answer creation,
+ * and ICE candidate management.
+ *
+ * Core Responsibilities:
+ * - Create recvonly RTCPeerConnection for tech
+ * - Handle incoming offer from user
+ * - Generate and send answer via signaling layer
+ * - Queue and flush ICE candidates safely
+ * - Surface peer connection state updates
+ * - Provide cleanup (stop) handler
+ *
+ * Data Sources:
+ * - Shared peer connection builder (peer.js)
+ * - ICE queue utility (iceQueue.js)
+ * - Signaling layer for offer/answer/ICE exchange
+ *
+ * Security / Env:
+ * - No direct environment variable usage
+ * - Depends on signaling layer and ICE configuration
+ */
 
 import { createPeerConnection } from "./peer";
 import { createIceQueue } from "./iceQueue";

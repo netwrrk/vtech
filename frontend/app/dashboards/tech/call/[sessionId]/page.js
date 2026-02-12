@@ -1,4 +1,34 @@
-// frontend/app/dashboards/tech/call/[sessionId]/page.js
+/**
+ * TECH WEBRTC CALL PAGE
+ * ------------------------------------------------------
+ * Route: frontend/app/dashboards/tech/call/[sessionId]/page.js
+ *
+ * Purpose:
+ * Handles the live WebRTC session for a Tech user.
+ * Connects to backend signaling, joins the assigned
+ * session, and receives the User’s media stream.
+ *
+ * Core Responsibilities:
+ * - Extract sessionId from route params
+ * - Resolve and persist techId (URL or localStorage)
+ * - Initialize receive-only WebRTC flow (startTechFlow)
+ * - Establish WebSocket signaling connection
+ * - Register tech presence before joining session
+ * - Handle signaling messages (offer, answer, ICE)
+ * - Reflect connection state via shared CALL_STATUS
+ * - Attach remote user stream to video element
+ *
+ * Data Sources:
+ * - shared/sessions/signaling (WS abstraction)
+ * - shared/sessions/ids (session + techId helpers)
+ * - shared/sessions/state (call status constants)
+ * - shared/webrtc/techFlow (WebRTC logic)
+ * - Backend WebSocket signaling server
+ *
+ * Security / Env:
+ * - Requires NEXT_PUBLIC_BACKEND_WS
+ */
+
 "use client";
 
 import { useEffect, useRef, useState } from "react";

@@ -1,5 +1,29 @@
-// frontend/app/shared/sessions/ids.js
-// Shared id helpers (sessionId + techId) used across dashboards + call pages.
+/**
+ * SESSION ID UTILITIES
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/sessions/ids.js
+ *
+ * Purpose:
+ * Centralized helpers for normalizing and retrieving
+ * sessionId and techId values across dashboards
+ * and WebRTC call pages.
+ *
+ * Core Responsibilities:
+ * - Normalize techId and sessionId values
+ * - Read/write techId from localStorage
+ * - Extract techId from URL query string
+ * - Extract sessionId safely from Next.js route params
+ * - Provide autoJoin query convenience helper
+ *
+ * Data Sources:
+ * - URL query parameters (techId, autoJoin)
+ * - localStorage (vtech.techId)
+ * - Next.js dynamic route params
+ *
+ * Security / Env:
+ * - Uses browser-only APIs (window, localStorage)
+ * - Guards against SSR execution
+ */
 
 export const TECH_ID_LS_KEY = "vtech.techId";
 

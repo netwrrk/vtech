@@ -1,4 +1,26 @@
-// frontend/app/user-dashboard/components/CategoryBar.js
+/**
+ * CATEGORY BAR COMPONENT
+ * ------------------------------------------------------
+ * Route: frontend/app/user-dashboard/components/CategoryBar.js
+ *
+ * Purpose:
+ * Premium selector control used on the User Dashboard
+ * to display and open the equipment category picker.
+ *
+ * Core Responsibilities:
+ * - Display current selected category
+ * - Trigger category sheet open via click or keyboard
+ * - Support swipe-down gesture to open (mobile-friendly)
+ * - Reflect open/pressed visual state
+ * - Provide accessible button semantics (aria-expanded)
+ *
+ * Data Sources:
+ * - Props: label, value, open, onOpen, hint, ariaLabel
+ *
+ * Security / Env:
+ * - No environment dependencies (UI interaction component)
+ */
+
 "use client";
 
 import { useRef, useState } from "react";

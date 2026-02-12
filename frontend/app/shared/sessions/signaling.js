@@ -1,6 +1,30 @@
-// frontend/app/shared/sessions/signaling.js
-// Browser-side WS signaling client for VTech sessions.
-// Matches backend protocol in server.js (hello, register_tech, call_request, join_session, signal, end_session, subscribe_presence).
+/**
+ * SIGNALING CLIENT (WEBSOCKET)
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/sessions/signaling.js
+ *
+ * Purpose:
+ * Lightweight browser-side WebSocket signaling client
+ * used for session management, presence, and WebRTC
+ * message exchange between user and tech.
+ *
+ * Core Responsibilities:
+ * - Establish and manage WebSocket connection
+ * - Identify client role ("user" or "tech") via hello
+ * - Send/receive session lifecycle messages
+ * - Send/receive WebRTC signaling messages (offer, answer, ice)
+ * - Provide helper methods matching backend protocol
+ * - Surface logs and lifecycle events via callbacks
+ *
+ * Data Sources:
+ * - Environment: wsUrl (NEXT_PUBLIC_BACKEND_WS)
+ * - Backend WS protocol (hello, register_tech, join_session, signal, etc.)
+ *
+ * Security / Env:
+ * - Requires valid WebSocket URL
+ * - Sends structured JSON only
+ * - Guards against invalid roles and malformed payloads
+ */
 
 export function safeJsonParse(raw) {
   try {

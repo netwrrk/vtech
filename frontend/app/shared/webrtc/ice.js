@@ -1,6 +1,25 @@
-// frontend/app/shared/webrtc/ice.js
-// Centralized ICE server config.
-// Today: STUN-only. Later: fetch STUN+TURN from backend.
+/**
+ * ICE CONFIG MODULE
+ * ------------------------------------------------------
+ * Route: frontend/app/shared/webrtc/ice.js
+ *
+ * Purpose:
+ * Provide centralized ICE server configuration for
+ * all WebRTC peer connections (user + tech).
+ *
+ * Core Responsibilities:
+ * - Return ICE server list for RTCPeerConnection
+ * - Currently provides STUN-only configuration
+ * - Designed to support future backend-fetched TURN servers
+ *
+ * Data Sources:
+ * - Static STUN server (Google STUN)
+ * - Future: backend endpoint for dynamic STUN/TURN
+ *
+ * Security / Env:
+ * - No required env variables in current MVP
+ * - Future version may depend on NEXT_PUBLIC_BACKEND_HTTP
+ */
 
 export async function getIceServers() {
   // For MVP keep it simple + reliable.

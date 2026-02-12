@@ -1,3 +1,31 @@
+/**
+ * AUTH PAGE (LOGIN / SIGN UP)
+ * ------------------------------------------------------
+ * Route: /frontend/app/auth/sign-in/page.js
+ *
+ * Purpose:
+ * Handles user authentication for both login and account creation
+ * using Supabase. Determines user role and redirects to the
+ * appropriate dashboard after successful authentication.
+ *
+ * Core Responsibilities:
+ * - Render login and sign-up UI
+ * - Validate credentials client-side
+ * - Create accounts via Supabase Auth
+ * - Authenticate users via Supabase Auth
+ * - Insert and fetch user role from Profile table
+ * - Redirect to /tech-dashboard or /user-dashboard
+ * - Infer role from URL query (?role=user), defaulting to tech
+ *
+ * Data Sources:
+ * - Supabase Auth (auth.signUp, auth.signInWithPassword)
+ * - Supabase "Profile" table (role lookup + insert)
+ *
+ * Security / Env:
+ * - Requires NEXT_PUBLIC_SUPABASE_URL
+ * - Requires NEXT_PUBLIC_SUPABASE_ANON_KEY
+ */
+
 "use client";
 
 import { useMemo, useState } from "react";
